@@ -1,7 +1,7 @@
 SimpleJekyllSearch({
   searchInput: document.getElementById('search-input'),
   resultsContainer: document.getElementById('results-container'),
-  json: 'http://remoblaser.github.io/search.json',
+  json: 'http://blog.remoblaser.ch/search.json',
   searchResultTemplate: '<li><a href="{url}" title="{title}">{title}</a></li>',
   noResultsText: '<li class="no-results">No results found :(</li>',
   limit: 10,

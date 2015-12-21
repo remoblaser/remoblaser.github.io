@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="HandheldFriendly" content="True">
 <meta name="MobileOptimized" content="320">
-<meta name="theme-color" content="#2ecc71">
+<meta name="theme-color" content="#22313f">
 
 {% assign page_title = '' %}
 {% if page.title == "Home" %}{% capture page_title %}{{ site.title }} | {{ site.description }}{%if paginator and paginator.page != 1 %} - Página {{ paginator.page }}{% endif %}{% endcapture %}{% else %}{% capture page_title %}{%if page.slug == 'category' %}Categoria: {% endif %}{%if page.slug == 'tag' %}Tag: {% endif %} {{ page.title }} | {{ site.title }}{% endcapture %}{% endif %}
