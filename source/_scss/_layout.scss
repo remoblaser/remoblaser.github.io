@@ -164,14 +164,12 @@
  */
 .site-header,
 .site-footer {
-  background: url("https://raw.githubusercontent.com/thoughtbot/refills/master/source/images/mountains.png"), linear-gradient(10deg, #20392B, #7F99BE), no-repeat #7F99BE scroll;
   background-color: $secondary-color;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
 .site-header {
-  border-top: 5px solid $black-color;
   padding: {
     top: 1.4em;
     bottom: 3em;
@@ -310,7 +308,6 @@ $sliding-panel-background-focus: lighten($sliding-panel-background, 5%);
   }
 
   a {
-    text-decoration: none;
 
     &:hover,
     &:focus {
@@ -376,6 +373,12 @@ $sliding-panel-background-focus: lighten($sliding-panel-background, 5%);
     color: #787878;
     text-decoration: none;
     padding-left: 5px;
+    i {
+      color: #787878;
+      &:hover { 
+        color: lighten(#787878, 10%);
+      }
+    }
   }
 }
 
