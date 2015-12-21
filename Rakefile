@@ -39,7 +39,7 @@ task :publish => [:generate] do
     system "git init"
     system "git checkout --orphan #{GITHUB_REPO_BRANCH}"
     system "git rm -rf ."
-    system "echo blog.remoblaser.ch > CNAME"
+    #system "echo blog.remoblaser.ch > CNAME"
     system "git add ."
     message = "Site updated at #{Time.now.utc}"
     system "git commit -am #{message.inspect}"
