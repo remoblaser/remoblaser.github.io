@@ -5,7 +5,7 @@ require "bundler/setup"
 require "jekyll"
 
 GITHUB_REPONAME    = "remoblaser/remoblaser.github.io"
-GITHUB_REPO_BRANCH = "gh-pages"
+GITHUB_REPO_BRANCH = "master"
 
 SOURCE = "source/"
 DEST   = "_site"
@@ -38,6 +38,7 @@ task :publish => [:generate] do
 
     system "git init"
     system "git checkout --orphan #{GITHUB_REPO_BRANCH}"
+    system "git rm -rf ."
     system "echo blog.remoblaser.ch > CNAME"
     system "git add ."
     message = "Site updated at #{Time.now.utc}"
