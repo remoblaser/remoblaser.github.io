@@ -210,11 +210,10 @@ $sliding-panel-background-focus: lighten($sliding-panel-background, 5%);
 
 .sliding-panel-content {
   @include position(fixed, 0px auto 0px 0px);
-  padding-top: 5px;
   @include size(220px 100%);
   @include transform(translateX(-220px));
   @include transition(all 0.25s linear);
-  background: $sliding-panel-background;
+  background: $primary-color;
   z-index: 999999;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -226,7 +225,7 @@ $sliding-panel-background-focus: lighten($sliding-panel-background, 5%);
   }
 
   li a {
-    border-bottom: $sliding-panel-border;
+    border-bottom: $primary-color;
     color: $sliding-panel-color;
     display: block;
     font-weight: bold;
@@ -235,7 +234,7 @@ $sliding-panel-background-focus: lighten($sliding-panel-background, 5%);
 
     &:focus,
     &:hover {
-      background-color: $primary-color;
+      background-color: $secondary-color;
       color: $sliding-panel-color-hover;
     }
   }
@@ -300,6 +299,9 @@ $sliding-panel-background-focus: lighten($sliding-panel-background, 5%);
  * .posts
  */
 
+.home .post a {
+  text-decoration: none;
+}
 .post {
   margin: 3em 0;
 
@@ -314,7 +316,6 @@ $sliding-panel-background-focus: lighten($sliding-panel-background, 5%);
       color: lighten($primary-color, 10%);
     }
   }
-
   .post-meta {
     display: block;
     margin-bottom: 1em;
