@@ -1,0 +1,49 @@
+permalink   : /:categories/:year/:title/
+markdown    : kramdown
+highlighter : pygments
+
+paginate: 2 #6
+comments: true
+paginate_path: "/page/:num"
+
+source: source
+destination: _site
+sass:
+  sass_dir: _scss
+  style: compressed
+
+cover: /assets/images/default-cover.png
+
+name: remoblaser.ch
+title: remoblaser.ch
+description: "Friendly Webdeveloper from your neighbourhood"
+keywords: "remoblaser, remo, blaser, web, php, laravel, wordpress, development"
+url: http://remoblaser.ch
+baseurl: ""
+domain_name: remoblaser.ch
+# google_analytics: UA-52446115-1
+
+social:
+  twitter:
+    link: http://twitter.com/remoblaser
+    slug: twitter
+  github:
+    link: http://github.com/remoblaser
+    slug: github
+  google:
+    link: http://plus.google.com/+RemoBlaser
+    slug: google-plus
+  xing:
+    link: http://xing.com/profile/Remo_Blaser
+    slug: xing
+
+author:
+  name      : Remo Blaser
+  image     : /assets/images/author.jpg
+  email     : hi@remoblaser.ch
+  url       : http://remoblaser.ch
+  twitter   : http://twitter.com/remoblaser
+  github    : http://github.com/remoblaser
+  bio       : "23 years old web-develper at WeLoveYou , code junkie, E-Sport enthusiast"
+gems: [jekyll-paginate]
+exclude: ["gulp", "node_modules", "bower", "bower_components", "config.rb", "src", "Gemfile", "Gemfile.lock", ".rvmrc", ".rbenv-version", "package.json", "gulpfile.js", "README.md", "Rakefile", "changelog.md"]
