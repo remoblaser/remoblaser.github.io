@@ -21,7 +21,7 @@ keywords: "remoblaser, remo, blaser, web, php, laravel, wordpress, development"
 url: http://remoblaser.ch
 baseurl: ""
 domain_name: remoblaser.ch
-# google_analytics: UA-52446115-1
+google_analytics: UA-50142337-2
 
 social:
   twitter:
