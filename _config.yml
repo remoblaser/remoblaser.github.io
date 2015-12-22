@@ -18,9 +18,9 @@ name: remoblaser.ch
 title: remoblaser.ch
 description: "Friendly Webdeveloper from your neighbourhood"
 keywords: "remoblaser, remo, blaser, web, php, laravel, wordpress, development"
-url: http://remoblaser.ch
+url: http://blog.remoblaser.ch
 baseurl: ""
-domain_name: remoblaser.ch
+domain_name: blog.remoblaser.ch
 google_analytics: UA-50142337-2
 
 social:
