@@ -1,6 +1,7 @@
 ---
 layout: page
 title: About
+description: "Short information about myself, the author on this Blog."
 permalink: /about/
 ---
 
