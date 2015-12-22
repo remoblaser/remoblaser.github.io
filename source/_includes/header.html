@@ -26,7 +26,7 @@
     {% elsif page.bodyclass == 'page' %}
       <h1 class="post-title">{{ page.title }}</h1>
     {% else %}
-      <h1>Hi, I'm {{ site.author.name }}</h1>
+      <h1>Hi, I'm {{ site.author.shortname }}</h1>
       {% include search.html %}
     {% endif %}
 
