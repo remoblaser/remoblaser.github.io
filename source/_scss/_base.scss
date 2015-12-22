@@ -160,10 +160,6 @@ q {
   }
 }
 
-pre {
-  
-
-}
 
 pre {
   -webkit-overflow-scrolling: touch;
@@ -173,9 +169,10 @@ pre {
   border: 1px solid #e8e8e8;
   border-radius: 3px;
   background-color: #eef;
+  padding: 5px 10px;
   color: $primary-color;
   code {
-    word-break: break-all;
+    word-wrap: break-word;
     line-height: 1.75em;
   }
 }
