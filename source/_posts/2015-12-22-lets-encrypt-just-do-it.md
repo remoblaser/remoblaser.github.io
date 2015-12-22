@@ -4,7 +4,7 @@ title: "Let's Encrypt: Just do it!"
 date: 2015-12-22 15:10:49
 description: "Let's Encrpyt gives you a easy way to use SSL on your Website for free, use it!"
 keywords: "lets, encrypt, https, ssl, certificate, nginx"
-category: Devs managing a Server
+category: Devs-managing-a-Server
 
 tags:
 - SSL
