@@ -19,7 +19,6 @@ document.onkeypress = function (e) {
   e = e || window.event;
   if(e.charCode === 115)
   {
-    e.preventDefault();
     $('#search-input').focus();
   }
 };
