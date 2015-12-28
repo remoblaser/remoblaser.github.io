@@ -85,7 +85,7 @@ Or search through all Tables by simply using *"Search::all()"*.
 As a parameter, we use the word we would like to search.
 
     
-    Search::posts('john'); // Only search through the App\User table
+    Search::users('john'); // Only search through the App\User table
     Search::all('john'); // Search through all the Tables defined in our config
     
 
