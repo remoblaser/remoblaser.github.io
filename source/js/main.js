@@ -14,7 +14,9 @@ $(document).ready(function() {
     e.preventDefault();
   });
 
-  setTimeout(showSubscribePanel, 4000);
+  if(Cookies.get('subscribe') === undefined) {
+    setTimeout(showSubscribePanel, 4000);
+  }
 });
 
 document.onkeypress = function (e) {
@@ -34,4 +36,6 @@ function showSubscribePanel()
   });
   $('.site-footer').css('padding-bottom', '108px');
   $('.subscribe').fadeIn();
+
+  Cookies.set('subscribe', 1);
 }
