@@ -12,17 +12,24 @@ bodyclass: single
 
       <span>Share this: </span> 
 
-      <a href="http://twitter.com/share?text={{page.title}}&amp;url={{site.url}}{{ page.url }}&amp;via=remoblaser"
+      <a href="//twitter.com/share?text={{page.title}}&amp;url={{site.url}}{{ page.url }}&amp;via=remoblaser"
       onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
         <i class="fa fa-twitter"></i>
       </a>
 
-      <a href="https://www.facebook.com/sharer/sharer.php?u={{site.url}}{{page.url}}"
+      <a href="//www.facebook.com/sharer/sharer.php?u={{site.url}}{{page.url}}"
       onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
         <i class="fa fa-facebook"></i>
+      </a>
+
+      <a target="_blank" href="//de.pinterest.com/pin/create/button/" data-pin-do="buttonBookmark"  data-pin-color="red" data-pin-height="28">
+        <i class="fa fa-pinterest"></i>
       </a>
 
     </aside>
   </div>
 
 </article>
+
+
+{% include subscribe.html %}

@@ -215,3 +215,42 @@ q {
     }
   }
 }
+
+.subscribe {
+  display: none;
+  position: fixed;
+  bottom:0;
+  left:0;
+  text-align: center;
+  width: 100%;
+  color: rgba(255,255,255,0.75);
+  background: $primary-color;
+  .close {
+    position: absolute;
+    top: 5px;
+    right: 15px;
+  }
+  &.in {
+    display: block;
+  }
+  p {
+    margin: 1em 0em;
+  }
+  .mc-field-group, .clear {
+    display: inline-block;
+  }
+  .inline {
+    display: inline-block;
+  }
+  .button {
+    background-color: $bg-color;
+    color: $secondary-color;
+    vertical-align: inherit;
+
+    &:hover,
+    &:focus {
+      background-color: shade($bg-color, 20%);
+      color: $secondary-color;
+    }
+  }
+}

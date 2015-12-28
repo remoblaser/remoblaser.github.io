@@ -13,6 +13,8 @@ $(document).ready(function() {
     $('.sliding-panel-content,.sliding-panel-fade-screen').toggleClass('is-visible');
     e.preventDefault();
   });
+
+  setTimeout(showSubscribePanel, 4000);
 });
 
 document.onkeypress = function (e) {
@@ -22,3 +24,14 @@ document.onkeypress = function (e) {
     $('#search-input').focus();
   }
 };
+
+function showSubscribePanel()
+{
+  $('.subscribe .close').click(function()
+  {
+    $('.site-footer').css('padding-bottom', '0px');
+    $('.subscribe').fadeOut();
+  });
+  $('.site-footer').css('padding-bottom', '108px');
+  $('.subscribe').fadeIn();
+}
