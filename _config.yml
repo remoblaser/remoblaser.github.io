@@ -1,6 +1,8 @@
 permalink   : /:categories/:year/:title/
-markdown    : kramdown
+markdown: KramdownPygments
 highlighter : pygments
+kramdown: 
+  input: GFM
 
 paginate: 6 
 comments: true

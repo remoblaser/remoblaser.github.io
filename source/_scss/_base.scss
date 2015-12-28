@@ -161,22 +161,6 @@ q {
 }
 
 
-pre {
-  -webkit-overflow-scrolling: touch;
-  font-family: "Courier New", monospace;
-  margin: 0;
-  font-size: 15px;
-  border: 1px solid #e8e8e8;
-  border-radius: 3px;
-  background-color: #eef;
-  padding: 5px 10px;
-  color: $primary-color;
-  code {
-    word-wrap: break-word;
-    line-height: 1.75em;
-  }
-}
-
 .clearfix {
   @extend %clearfix;
 }

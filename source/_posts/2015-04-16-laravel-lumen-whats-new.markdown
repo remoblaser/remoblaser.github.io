@@ -22,7 +22,7 @@ And if you ever feel like you need the full Laravel stack, you can just copy and
 Let's have a look at it!
 
 
-##The speed difference
+## The speed difference
 
 According to lumen.laravel.com, this little boy is able to handle 1900 requests per second.
 In comparison: Silex is able to handle 1000 requests per second, Slim 3 manages 1800 requests per second.
@@ -35,7 +35,7 @@ With all this small things, Lumen is one of the fastest PHP Micro Framework out 
 YOU CAN JUST COPY YOUR CODE TO A LARAVEL INSTALLATION AND IT WORKS!? AWESOME!
 
 
-##When to use it?
+## When to use it?
 
 Lumen is a perfect solution if you're trying to build small web applications or API's.
 It's fast, slim and easy.<br />
@@ -43,7 +43,7 @@ Basically you could always start a web project in Lumen and then just copy it in
 Laravel installation if you need more features and a full stacked Framework.
 
 
-##Useful Links
+## Useful Links
 Here are some links you should definitely check out!
 
 [Reddit announcement including discussions with Taylor](http://www.reddit.com/r/PHP/comments/32kajb/lumen_php_microframework_by_laravel/)<br />

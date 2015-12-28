@@ -20,7 +20,7 @@ As we can see, Wordpress searches for the **query variable** (the keyword) in ev
 
 Luckily, if you're able to read and write code, you're able to remove this without touching any of the Wordpress core files. There is a hook available which you could use in your Wordpress theme. Here's the **snippet to deactivate it**:
 
-    
+~~~php
     function disable_redirect_guess($status_header){
         global $wp_query;
     
@@ -31,6 +31,6 @@ Luckily, if you're able to read and write code, you're able to remove this witho
     }
     
     add_filter( 'status_header', 'disable_redirect_guess' );
-
+~~~
   \\
 However, this is a bit of a hack since we just remove the query variables, so **be careful with this piece of code!**

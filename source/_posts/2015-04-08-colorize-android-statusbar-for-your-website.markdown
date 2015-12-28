@@ -20,7 +20,7 @@ On the Screenshots you can clearly see, how this behaves. The Twitter app has it
 Here's the HTML snippet to it. Just simply place the meta tag in your head part and you're done!
 
 ~~~html
-<head>
-    <meta name="theme-color" content="#53A6DC">
-</head>
+    <head>
+        <meta name="theme-color" content="#53A6DC">
+    </head>
 ~~~
