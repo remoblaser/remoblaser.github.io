@@ -373,9 +373,10 @@ $sliding-panel-background-focus: lighten($sliding-panel-background, 5%);
     display: inline-block;
     color: #787878;
     text-decoration: none;
-    padding-left: 5px;
+    padding-left: 7px;
     i {
       color: #787878;
+      font-size: 120%;
       &:hover { 
         color: lighten(#787878, 10%);
       }

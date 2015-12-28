@@ -229,6 +229,9 @@ q {
     position: absolute;
     top: 5px;
     right: 15px;
+    i {
+      font-size: 120%;
+    }
   }
   &.in {
     display: block;
