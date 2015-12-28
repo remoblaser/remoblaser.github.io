@@ -5,6 +5,7 @@ date: 2015-12-28 10:24:05
 description: "Ever wondered how promises in JavaScript work? Well, here's a easy explanation."
 keywords: "javascript, promise, es6, js"
 category: Frontend-shizzle
+comments: true
 tags:
 - JavaScript
 

@@ -5,6 +5,8 @@ title: "Lumen is here! But whats is it?"
 description: "It's finally here! Lumen! A fast and lightweight version of Laravel."
 keywords: "laravel, lumen, php"
 category: Laravel
+comments: true
+
 tags:
 - Laravel
 - Lumen

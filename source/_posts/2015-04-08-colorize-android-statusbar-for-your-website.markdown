@@ -5,6 +5,8 @@ title: "Colorize Android statusbar for your Website"
 description: "With a simple meta tag called theme-color you're able to submit a color code which will then be used on Android Smartphones."
 keywords: "android, statusbar, color, meta, html"
 category: Frontend-shizzle
+comments: true
+
 tags:
 - HTML
 - CSS

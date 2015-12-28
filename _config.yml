@@ -24,6 +24,7 @@ url: http://blog.remoblaser.ch
 baseurl: ""
 domain_name: blog.remoblaser.ch
 google_analytics: UA-50142337-2
+disqus_shortname: remoblaser
 
 social:
   twitter:

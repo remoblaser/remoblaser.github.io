@@ -5,6 +5,8 @@ title: "Bootstrap 4 to hit the stage"
 description: "The undoubtful best HTML/CSS Framework Bootstrap is close to release it's 4th version."
 keywords: "bootstrap, html, css, frontend"
 category: Fontend-shizzle
+comments: true
+
 tags:
 - CSS
 - Bootstrap

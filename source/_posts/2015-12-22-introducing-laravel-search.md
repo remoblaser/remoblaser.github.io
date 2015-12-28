@@ -5,6 +5,7 @@ date: 2015-12-22 09:20:45
 description: "In this Blogpost i'm going to introduce to you my Laravel search package."
 keywords: "laravel, search, remoblaser, package"
 category: Laravel
+comments: true
 
 tags:
 - Laravel

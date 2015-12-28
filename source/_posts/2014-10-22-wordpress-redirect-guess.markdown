@@ -5,6 +5,8 @@ title: "Wordpress redirect guess"
 description: "Wordpress automatically guesses a page if a 404 Error occurs. Here's how it works."
 keywords: "wordpress, redirect, php, guess"
 category: Wordpress
+comments: true
+
 tags:
 - Wordpress
 - PHP
