@@ -53,7 +53,7 @@ Now we can create our function. I recommend writing those in a different file an
          die();
     }
 ~~~
-  
+    
 ## On to JavaScript
 Now we can just call the method with JavaScript, i've done this with jQuery, which looks like this:
 
