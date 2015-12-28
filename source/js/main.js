@@ -29,7 +29,7 @@ function showSubscribePanel()
 {
   $('.subscribe .close').click(function()
   {
-    $('.site-footer').css('padding-bottom', '0px');
+    $('.site-footer').css('padding-bottom', '2em');
     $('.subscribe').fadeOut();
   });
   $('.site-footer').css('padding-bottom', '108px');
