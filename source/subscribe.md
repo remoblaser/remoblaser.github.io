@@ -21,7 +21,7 @@ I will not send you any spam or ads, this is just for sending my weekly updates.
     <div class="response" id="mce-success-response" style="display:none"></div>
 </div>   
 <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_f1a5c7aaa441210086d3e9047_d41fbaadee" tabindex="-1" value=""></div>
-<div class="clear"><input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" onclick="_gaq.push('send', 'event', 'button', 'click', 'add-subscriber');" class="button"></div>
+<div class="clear"><input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" onclick="ga('send', 'event', 'button', 'click', 'add-subscriber');" class="button"></div>
 </div>
 </form>
 </div>
