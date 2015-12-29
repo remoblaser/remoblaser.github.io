@@ -13,12 +13,12 @@ bodyclass: single
       <span>Share this: </span> 
 
       <a href="//twitter.com/share?text={{page.title}}&amp;url={{site.url}}{{ page.url }}&amp;via=remoblaser"
-      onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+      onclick="ga('send', 'event', 'button', 'click', 'share');window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
         <i class="fa fa-twitter"></i>
       </a>
 
       <a href="//www.facebook.com/sharer/sharer.php?u={{site.url}}{{page.url}}"
-      onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+      onclick="ga('send', 'event', 'button', 'click', 'share');window.open(this.href, 'facebook-share','width=580,height=296');return false;">
         <i class="fa fa-facebook"></i>
       </a>
 
