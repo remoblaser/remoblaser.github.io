@@ -262,7 +262,7 @@ permalink: "examples/fun/"
     };
 
 
-    writeCode(code, 0, 0);
+    writeCode(code, 0, 40);
 }.call(this));
 
 
