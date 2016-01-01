@@ -4,7 +4,7 @@ title: "The Power of grep"
 date: 2016-01-01 19:32:35
 description: "A powerful, easy and fast way to search through files: grep."
 keywords: "grep, easy, how to, tutorial"
-category: Devs-managing-a-Server
+category: bashing
 comments: true
 
 tags:
