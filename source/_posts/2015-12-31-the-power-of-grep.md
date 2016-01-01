@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "The Power of grep"
-date: 2015-12-31 09:52:35
+date: 2016-01-01 19:32:35
 description: "A powerful, easy and fast way to search through files: grep."
 keywords: "grep, easy, how to, tutorial"
 category: Devs-managing-a-Server
@@ -43,3 +43,6 @@ If you're familiar with Regular Expressions (i'm not really good with them), you
 A full manual about grep can be found on the [gnu.org](http://www.gnu.org/software/grep/manual/grep.html) site.
 
 Closing out: grep is very powerful and fast, consider using it instead of the bloated search of your editor.
+
+
+P.S.: Happy new year!
