@@ -18,7 +18,7 @@ But there is a way faster and more powerful way to do this, as you might suspect
 
 grep is a command-line utility for Unix-like systems, there are also several Windows alternatives, like [PowerGREP](http://www.powergrep.com/grep.html).
 
-To search for a given file in a file, the command looks like this
+To search for a given string in a file, the command looks like this
 
 ~~~bash
     $ grep <keyword> <file>
