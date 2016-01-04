@@ -13,14 +13,15 @@ tags:
 
 ---
 
-In my previous post i confessed the fact, i'm really bad with regular expressions.
-During the weekend a tweet popped up with a link to [this beautiful library called "VerbalExpressions"](https://github.com/VerbalExpressions/JSVerbalExpressions).
+In my previous post i confessed the fact, I'm really bad with regular expressions.
+During the weekend, a tweet popped up with a link to [this beautiful library called "VerbalExpressions"](https://github.com/VerbalExpressions/JSVerbalExpressions).
 
 VerbalExpressions helps you to build up your regular expressions, by simply chaining methods to create lines which basically do what they read.
 Behind the scenes, VerbalExpressions just creates a simple RegEx which we then use to validate a given string.
 
-Here's a example taken from their GitHub page. We validate a string to test, if we have a valid URL.
-VerbalExpressions is ported in a few languages so far, you can find a full list on their [GitHub page](http://verbalexpressions.github.io/). 
+Here's an example taken from their GitHub page. We validate a string to test, if we have a valid URL.
+VerbalExpressions is ported in a few languages so far (such as PHP, Python, Java and C#).
+You can find a full list on their [GitHub page](http://verbalexpressions.github.io/). 
 I've taken the JavaScript approach for this example.
 
 ~~~JavaScript
