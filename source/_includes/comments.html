@@ -12,7 +12,7 @@
         
         var disqus_config = function () {
             this.page.url = '{{ site.url }}{{ page.id }}';
-            this.page.identifier = '{{ page.id }}';
+            this.page.identifier = '{{ page.id }}' + '{{site.url}}';
             this.page.title = "{{ page.title }}";
         };
         
