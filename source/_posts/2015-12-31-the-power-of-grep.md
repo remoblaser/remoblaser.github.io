@@ -6,7 +6,6 @@ description: "A powerful, easy and fast way to search through files: grep."
 keywords: "grep, easy, how to, tutorial"
 category: bashing
 comments: true
-id: 11
 
 tags:
 - grep

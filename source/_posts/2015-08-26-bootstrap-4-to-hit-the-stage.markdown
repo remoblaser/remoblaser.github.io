@@ -6,7 +6,6 @@ description: "The undoubtful best HTML/CSS Framework Bootstrap is close to relea
 keywords: "bootstrap, html, css, frontend"
 category: Fontend-shizzle
 comments: true
-id: 6
 
 tags:
 - CSS

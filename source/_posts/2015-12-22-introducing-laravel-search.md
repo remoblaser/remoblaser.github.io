@@ -6,7 +6,6 @@ description: "In this Blogpost i'm going to introduce to you my Laravel search p
 keywords: "laravel, search, remoblaser, package"
 category: Laravel
 comments: true
-id: 7
 
 tags:
 - Laravel

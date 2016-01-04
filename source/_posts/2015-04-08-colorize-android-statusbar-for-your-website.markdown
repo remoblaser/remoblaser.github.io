@@ -6,7 +6,6 @@ description: "With a simple meta tag called theme-color you're able to submit a 
 keywords: "android, statusbar, color, meta, html"
 category: Frontend-shizzle
 comments: true
-id: 4
 
 tags:
 - HTML
