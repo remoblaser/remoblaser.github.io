@@ -25,7 +25,7 @@ You can find a full list on their [GitHub page](http://verbalexpressions.github.
 I've taken the JavaScript approach for this example.
 
 ~~~JavaScript
-    // Create an example of how to test for correctly formed URLs
+    // Create an example to validate for correctly formed URLs
     var validator = VerEx()
                 .startOfLine()
                 .then( "http" )
