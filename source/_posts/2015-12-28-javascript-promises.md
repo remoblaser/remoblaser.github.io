@@ -6,6 +6,7 @@ description: "Ever wondered how promises in JavaScript work? Well, here's a easy
 keywords: "javascript, promise, es6, js"
 category: Frontend-shizzle
 comments: true
+id: 9
 
 tags:
 - JavaScript

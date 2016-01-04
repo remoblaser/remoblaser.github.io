@@ -6,6 +6,7 @@ description: "HTML natively supports autocompletion for Dropdowns!"
 keywords: "html, dropdown, autocomplete, datalist"
 category: Frontend-shizzle
 comments: true
+id: 3
 
 tags:
 - HTML

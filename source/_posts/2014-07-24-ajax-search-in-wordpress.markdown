@@ -6,6 +6,7 @@ description: "Creating a AJAX search in Wordpress is easy! Really!"
 keywords: "wordpress, ajax, search, jquery"
 category: Frontend-shizzle
 comments: true
+id: 1
 
 tags:
 - AJAX

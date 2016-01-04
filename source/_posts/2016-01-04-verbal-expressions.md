@@ -6,6 +6,7 @@ description: "Verbal expressions, a easy way to construct regular expressions"
 keywords: "verbal, expressions, regex, regular, expression"
 category: PrettyCoding
 comments: true
+id: 12
 
 tags:
 - Verbal Expressions

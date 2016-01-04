@@ -6,6 +6,7 @@ description: "It's finally here! Lumen! A fast and lightweight version of Larave
 keywords: "laravel, lumen, php"
 category: Laravel
 comments: true
+id: 5
 
 tags:
 - Laravel

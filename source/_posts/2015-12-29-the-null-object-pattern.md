@@ -6,6 +6,7 @@ description: "We always fight versus 'null', but instead, we could make it our f
 keywords: "null, object, pattern, php, refactoring, clean code"
 category: PrettyCoding
 comments: true
+id: 10
 
 tags:
 - PHP

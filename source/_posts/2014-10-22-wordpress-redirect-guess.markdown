@@ -6,6 +6,7 @@ description: "Wordpress automatically guesses a page if a 404 Error occurs. Here
 keywords: "wordpress, redirect, php, guess"
 category: Wordpress
 comments: true
+id: 2
 
 tags:
 - Wordpress
