@@ -1,11 +1,11 @@
 ---
 layout: post
 title: "Verbal expressions: RegEx made easy"
-permalink: verbal-expressions
 date: 2016-01-04 08:55:31
 description: "Verbal expressions, a easy way to construct regular expressions"
 keywords: "verbal, expressions, regex, regular, expression"
 category: PrettyCoding
+comments: true
 
 tags:
 - Verbal Expressions
