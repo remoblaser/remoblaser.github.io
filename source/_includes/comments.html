@@ -14,6 +14,9 @@
             this.page.url = '{{ site.url }}{{ page.id }}';
             this.page.identifier = '{{ page.id }}' + '{{site.url}}';
             this.page.title = "{{ page.title }}";
+            this.callbacks.onNewComment = [function() { 
+              ga('send', 'event', 'button', 'click', 'comment');
+            }];
         };
         
         (function() { 
