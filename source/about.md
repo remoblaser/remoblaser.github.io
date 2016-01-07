@@ -13,4 +13,6 @@ By now i've developed several Web-Applications and smaller CMS's for customers a
 
 If you would like to have a look at my work, check out my [Github](http://github.com/remoblaser) Profile.
 
+Would you like to know more about a specific topic? Just hit me up with your idea and i will talk about it here!
+
 Do you like this blog? Would you like to get in contact? Leave me a message on [Twitter](http://twitter.com/remoblaser).
