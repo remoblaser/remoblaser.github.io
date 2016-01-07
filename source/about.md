@@ -8,7 +8,7 @@ permalink: /about/
 Oh, hi there! I'm Remo, just another Developer from Switzerland.
 Currently i like working with [Laravel](http://laravel.com) and [VueJS](http://vuejs.org).
 
-Back in my days (aka 5 Years ago) i've started with Java and C# (especially MVC), so i'm not just a PHP Script kiddie.
+Back in my days (aka 5 Years ago) i've started with Java and C# (especially MVC), now i'm doing PHP.
 By now i've developed several Web-Applications and smaller CMS's for customers and for myself.
 
 If you would like to have a look at my work, check out my [Github](http://github.com/remoblaser) Profile.
