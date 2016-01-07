@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Laravel Multilanguage Models / Database"
+title: "Laravel Multi-language Models / Database"
 date: 2016-01-07 08:58:16
 description: "A proof of concept on how to accomplish multilanguage Databases and Models in Laravel"
 keywords: "laravel, multilanguage, database, models, eloquent"
@@ -10,7 +10,7 @@ comments: true
 tags:
 - Laravel
 - Database
-- Multilanguage
+- Multi-language
 ---
 
 Recently i had the opportunity to finally build up a Laravel project with multiple languages.\\
