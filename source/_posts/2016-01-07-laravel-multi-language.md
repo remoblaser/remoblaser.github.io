@@ -258,10 +258,6 @@ Everything else is pretty basic Eloquent stuff again.
     {
         protected $fillable = ['published'];
 
-        public function event()
-        {
-            return $this->belongsTo('ECMS\Models\Event');
-        }
         public function translation($language = null)
         {
             if ($language == null) {
@@ -319,10 +315,6 @@ Now just use this trait in our *Post* Model and we're done!
 
         protected $fillable = ['published'];
         
-        public function event()
-        {
-            return $this->belongsTo('ECMS\Models\Event');
-        }
         public function translation($language = null)
         {
             if ($language == null) {
