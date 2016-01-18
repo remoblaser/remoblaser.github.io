@@ -16,11 +16,11 @@ tags:
 
 Everyone coming from Java, C# or a similar language knows what enums are.
 For the others: Enums are a list of constants. Predefined values which do not represent any numeric or textual data.
-As an example you could define available Colors in a enum, like Colors.RED, Colors.BLUE etc.
+As an example you could define available Colors in an enum, like Colors.RED, Colors.BLUE etc.
 
 With the power of ES6 and the Open Source library [Enumify](https://github.com/rauschma/enumify) we can now use enums in JavaScript.
 
-Some might now start to say: "But there is already a possibility to use enums in JavaScript", and of course you're right.
+Some might say: "But there is already a possibility to use enums in JavaScript" and ofcourse you're right.
 Native JavaScript enums look like this:
 
 ~~~javascript
