@@ -12,8 +12,6 @@ tags:
 - Laravel
 ---
 
-# Part 1: The API
-
 "JSON Web Token (JWT) is a compact, URL-safe means of representing claims to be transferred between two parties." \\
 *Quote from [self-issued.info](http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html)* 
 
@@ -29,6 +27,7 @@ In the second Part we will set up a Frontend application consuming this API.
 
 Afterwards you could do all sort of things with this basic setup.
 
+# Part 1: The API
 
 ## Laravel setup
 
