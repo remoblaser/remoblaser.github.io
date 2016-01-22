@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Using JWT with Laravel 1/2"
+title: "Using JWT with Laravel - Part 1: The API"
 date: 2016-01-22 10:19:18
 description: "Showing off how to create a basic JWT auth with Laravel"
 keywords: "jwt, json, web, token, laravel, authentication"
