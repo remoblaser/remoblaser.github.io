@@ -88,7 +88,7 @@ The logout will happen on the client/frontend side, sine we can just destroy the
 Now we can set up these Methods in our *AuthController*.
 
 ~~~php
-use JWTAuth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
@@ -116,8 +116,8 @@ Over at *app/Http/Kernel.php* add these two Middlewares.
 ~~~php
     protected $routeMiddleware = [
         ...
-        'jwt.auth' => 'Tymon\JWTAuth\Middleware\GetUserFromToken',
-        'jwt.refresh' => 'Tymon\JWTAuth\Middleware\RefreshToken',
+        'jwt.auth' => \Tymon\JWTAuth\Middleware\GetUserFromToken::class,
+        'jwt.refresh' => \Tymon\JWTAuth\Middleware\RefreshToken::class,
     ];
 ~~~
 
