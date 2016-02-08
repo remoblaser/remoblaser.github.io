@@ -74,7 +74,7 @@ There's a good documentation about the options over at the [GitHub wiki](https:/
 Let's create a Basic Authentication Controller to handle incoming auth requests
 
 ~~~bash
-    $ php artisan make:controller --plain
+    $ php artisan make:controller AuthController
 ~~~
 
 And add some basic routes to our *app/Http/routes.php* file
