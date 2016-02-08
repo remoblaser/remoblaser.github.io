@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="theme-color" content="#22313f">
+
+<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
+
+
+
+
+<title> Laravel Multi-language Models / Database | remoblaser.ch</title>
+
+
+
+
+<meta name="description" content="A proof of concept on how to accomplish multilanguage Databases and Models in Laravel">
+
+<meta name="keywords" content="laravel, multilanguage, database, models, eloquent">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+
+
+
+<link rel="canonical" href="http://blog.remoblaser.ch/laravel/2016/laravel-multi-language/">
+<link rel="alternate" type="application/rss+xml" title="remoblaser.ch" href="http://blog.remoblaser.ch/feed.xml" />
+
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-50142337-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+
+  </head>
+  <body class="single">
+
+    <main class="main-container">
+
+        <header class="site-header">
+
+  <div class="container txt-center">
+    <a href="#" class="nav-toogle js-menu-trigger sliding-panel-button">
+      <span></span>
+      <span></span>
+      <span></span>
+    </a>
+
+    <nav class="js-menu sliding-panel-content">
+      <ul>
+        <li><a href="/">front</a></li>
+        <li><a href="/about">about</a></li>
+        <li><a href="/subscribe">subscribe</a></li>
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-feed"></i> feed</a></li>
+      </ul>
+    </nav>
+    <div class="js-menu-screen sliding-panel-fade-screen"></div>
+ 
+    <a href="/" class="author-thumb dot">
+      <img src="/images/author.jpg" alt="Author thumbnail" class="dot">
+    </a>
+
+    
+      <h1 class="post-title">Laravel Multi-language Models / Database</h1>
+      <p class="post-meta">Jan 7, 2016</p>
+    
+
+  </div>
+
+</header>
+
+
+        <section class="main-content">
+          <article class="post">
+
+  <div class="post-content container">
+    <p>Recently i had the opportunity to finally build up a Laravel project with multiple languages.<br />
+I’ve looked up multiple resources to have a look for the current “best practice” in this area.<br />
+I stumbled on a lot of good ideas and i’d like to show you today, how i did it.</p>
+
+<h1 id="the-problem">The Problem</h1>
+<p>The full App needs to be multilanguage, texts, buttons etc.<br />
+For the static stuff i’m blessed with the wonderful functionality <a href="https://laravel.com">Laravel</a> provides.<br />
+I can just use the built in <a href="https://laravel.com/docs/master/localization">localization</a> feature.</p>
+
+<p>For the stuff stored inside the Database however, i need a little concept.<br />
+I need to be able, to add any Language at any given time.<br />
+This means, our Database design and our application needs some sort of functionality to add new languages and set up everything properly.</p>
+
+<h1 id="the-concept">The Concept</h1>
+<p>A multilanguage Database design really depends on your needs and favours.
+I like the approach of creating a seperate table for the translations of a relation.
+Usually i give these tables the same name as the reference table and suffix them with <em>_translations</em>.</p>
+
+<p>Let’s say we have a Blog application and our posts need to be avaialable in multiple languages.
+This would be my approach to handle it</p>
+
+<h3 id="table-posts">Table posts</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Column</th>
+      <th style="text-align: center">Type</th>
+      <th style="text-align: right">Additional</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>id</td>
+      <td style="text-align: center">integer</td>
+      <td style="text-align: right">index, unique</td>
+    </tr>
+    <tr>
+      <td>published</td>
+      <td style="text-align: center">integer</td>
+      <td style="text-align: right"> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><br /></p>
+
+<h3 id="table-posttranslations">Table post_translations</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Column</th>
+      <th style="text-align: center">Type</th>
+      <th style="text-align: right">Additional</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>id</td>
+      <td style="text-align: center">integer</td>
+      <td style="text-align: right">index, unique</td>
+    </tr>
+    <tr>
+      <td>language</td>
+      <td style="text-align: center">string</td>
+      <td style="text-align: right"> </td>
+    </tr>
+    <tr>
+      <td>title</td>
+      <td style="text-align: center">string</td>
+      <td style="text-align: right"> </td>
+    </tr>
+    <tr>
+      <td>content</td>
+      <td style="text-align: center">text</td>
+      <td style="text-align: right"> </td>
+    </tr>
+    <tr>
+      <td>post_id</td>
+      <td style="text-align: center">integer</td>
+      <td style="text-align: right">foreign</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="how-do-i-want-to-use-it">How do i want to use it?</h2>
+<p>After that pretty simple Database setup i asked myself: “How would i like to use it?”<br />
+I like planning my application like this, it enforces me to write all my code and APIs way simpler.<br />
+I go ahead, create a simple example and write down the function calls, even though they do not exist yet.\</p>
+
+<p>For this example i sat down and just wrote the process of creating, reading, updating and deleting a entry.</p>
+
+<div class="highlight"><pre><code class="language-php">    <span class="c1">//Creating/Deleting a post and all translations should happen automatically once i create/delete a post</span>
+
+    <span class="c1">//Read the title in the currently set language</span>
+    <span class="nv">$post</span><span class="o">-&gt;</span><span class="na">translation</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">title</span><span class="p">;</span>
+
+    <span class="c1">//Read the title in the language &quot;de&quot;</span>
+    <span class="nv">$post</span><span class="o">-&gt;</span><span class="na">translation</span><span class="p">(</span><span class="s1">&#39;de&#39;</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">title</span><span class="p">;</span>
+
+    <span class="c1">//Update a post</span>
+    <span class="nv">$post</span><span class="o">-&gt;</span><span class="na">translation</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">update</span><span class="p">([]);</span></code></pre></div>
+
+<p>Pretty straightforward right? Ofcourse we immediately see how we set up our Eloquent model by just defining a basic relationship inside our <em>Post</em> model.</p>
+
+<p>With these basic ideas, let’s go ahead and build it.</p>
+
+<p><br /></p>
+
+<h1 id="lets-do-it">Let’s do it!</h1>
+
+<h2 id="database-and-migrations">Database and Migrations</h2>
+<p>First of all i create the migrations and models for our Laravel application.<br />
+Luckily we’re all artisans and we only need to run one command:</p>
+
+<div class="highlight"><pre><code class="language-bash">    <span class="nv">$ </span>php artisan make:model Post -m
+    Model created successfully.
+    Created Migration: 2016_01_07_090802_create_posts_table
+
+    <span class="nv">$ </span>php artisan make:model PostTranslation -m
+    Model created successfully.
+    Created Migration: 2016_01_07_091025_create_post_translations_table</code></pre></div>
+
+<p>Now let’s set up our Database</p>
+
+<p><em>file: database/migrations/2016_01_07_090802_create_posts_table.php</em></p>
+
+<div class="highlight"><pre><code class="language-php">    <span class="k">use</span> <span class="nx">Illuminate\Database\Schema\Blueprint</span><span class="p">;</span>
+    <span class="k">use</span> <span class="nx">Illuminate\Database\Migrations\Migration</span><span class="p">;</span>
+
+    <span class="k">class</span> <span class="nc">CreatePostsTable</span> <span class="k">extends</span> <span class="nx">Migration</span>
+    <span class="p">{</span>
+        <span class="sd">/**</span>
+<span class="sd">         * Run the migrations.</span>
+<span class="sd">         *</span>
+<span class="sd">         * @return void</span>
+<span class="sd">         */</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">up</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="nx">Schema</span><span class="o">::</span><span class="na">create</span><span class="p">(</span><span class="s1">&#39;posts&#39;</span><span class="p">,</span> <span class="k">function</span> <span class="p">(</span><span class="nx">Blueprint</span> <span class="nv">$table</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nv">$table</span><span class="o">-&gt;</span><span class="na">increments</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">);</span>
+
+                <span class="nv">$table</span><span class="o">-&gt;</span><span class="na">integer</span><span class="p">(</span><span class="s1">&#39;published&#39;</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">default</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+                <span class="nv">$table</span><span class="o">-&gt;</span><span class="na">timestamps</span><span class="p">();</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+
+        <span class="sd">/**</span>
+<span class="sd">         * Reverse the migrations.</span>
+<span class="sd">         *</span>
+<span class="sd">         * @return void</span>
+<span class="sd">         */</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">down</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="nx">Schema</span><span class="o">::</span><span class="na">drop</span><span class="p">(</span><span class="s1">&#39;posts&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre></div>
+
+<p><em>file: database/migrations/2016_01_07_091025_create_post_translations_table.php</em></p>
+
+<div class="highlight"><pre><code class="language-php">    <span class="k">use</span> <span class="nx">Illuminate\Database\Schema\Blueprint</span><span class="p">;</span>
+    <span class="k">use</span> <span class="nx">Illuminate\Database\Migrations\Migration</span><span class="p">;</span>
+
+    <span class="k">class</span> <span class="nc">CreatePostTranslationsTable</span> <span class="k">extends</span> <span class="nx">Migration</span>
+    <span class="p">{</span>
+        <span class="sd">/**</span>
+<span class="sd">         * Run the migrations.</span>
+<span class="sd">         *</span>
+<span class="sd">         * @return void</span>
+<span class="sd">         */</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">up</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="nx">Schema</span><span class="o">::</span><span class="na">create</span><span class="p">(</span><span class="s1">&#39;post_translations&#39;</span><span class="p">,</span> <span class="k">function</span> <span class="p">(</span><span class="nx">Blueprint</span> <span class="nv">$table</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nv">$table</span><span class="o">-&gt;</span><span class="na">increments</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">);</span>
+
+                <span class="nv">$table</span><span class="o">-&gt;</span><span class="na">string</span><span class="p">(</span><span class="s1">&#39;language&#39;</span><span class="p">);</span>
+
+                <span class="nv">$table</span><span class="o">-&gt;</span><span class="na">string</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">default</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+                <span class="nv">$table</span><span class="o">-&gt;</span><span class="na">text</span><span class="p">(</span><span class="s1">&#39;content&#39;</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">default</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+
+                <span class="nv">$table</span><span class="o">-&gt;</span><span class="na">integer</span><span class="p">(</span><span class="s1">&#39;post_id&#39;</span><span class="p">);</span>
+                <span class="nv">$table</span><span class="o">-&gt;</span><span class="na">foreign</span><span class="p">(</span><span class="s1">&#39;post_id&#39;</span><span class="p">)</span>
+                        <span class="o">-&gt;</span><span class="na">references</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+                        <span class="o">-&gt;</span><span class="na">on</span><span class="p">(</span><span class="s1">&#39;posts&#39;</span><span class="p">)</span>
+                        <span class="o">-&gt;</span><span class="na">onDelete</span><span class="p">(</span><span class="s1">&#39;cascade&#39;</span><span class="p">);</span>
+
+                <span class="nv">$table</span><span class="o">-&gt;</span><span class="na">timestamps</span><span class="p">();</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+
+        <span class="sd">/**</span>
+<span class="sd">         * Reverse the migrations.</span>
+<span class="sd">         *</span>
+<span class="sd">         * @return void</span>
+<span class="sd">         */</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">down</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="nx">Schema</span><span class="o">::</span><span class="na">drop</span><span class="p">(</span><span class="s1">&#39;post_translations&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre></div>
+
+<p>Alright, thats it for the Database (isn’t Laravel awesome?).<br />
+Let’s go ahead and migrate it.</p>
+
+<p><em>Note: Creating a Database and configure Laravel is not part of this tutorial.</em></p>
+
+<div class="highlight"><pre><code class="language-bash">    <span class="nv">$ </span>php artisan migrate
+    Migrated: 2016_01_07_090802_create_posts_table
+    Migrated: 2016_01_07_091025_create_post_translations_table</code></pre></div>
+
+<h2 id="configure-our-app">Configure our App</h2>
+
+<p>Now, let’s get to our models. As we said, we would like to create all translation entries once we create a post.<br />
+For this, i’ve created a simple config file in which we specify, which languages are supported in our Application.</p>
+
+<p>You could also put this in a Database table and let Admins of your Application create and delete certain Languages.</p>
+
+<p><em>file: config/languages.php</em></p>
+
+<div class="highlight"><pre><code class="language-php">    <span class="k">return</span> <span class="p">[</span>
+        <span class="s1">&#39;supported&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span>
+            <span class="s1">&#39;en&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;de&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">];</span></code></pre></div>
+
+<h2 id="set-up-eloquent-models">Set up Eloquent Models</h2>
+
+<p>We’ve already created our Eloquent models, we just need to provide them with some functionality now.<br />
+Let’s set up our <em>PostTranslation</em> model first.<br />
+Everything is pretty normal here, we add our <em>$fillable</em> array to define, which values can be filled when supplying a array of data.<br />
+Afterwards we define the inverse of our relationship with the <em>posts</em> table.</p>
+
+<p><em>file: app/PostTranslation.php</em></p>
+
+<div class="highlight"><pre><code class="language-php">    <span class="k">namespace</span> <span class="nx">App</span><span class="p">;</span>
+
+    <span class="k">use</span> <span class="nx">Illuminate\Database\Eloquent\Model</span><span class="p">;</span>
+
+    <span class="k">class</span> <span class="nc">PostTranslation</span> <span class="k">extends</span> <span class="nx">Model</span>
+    <span class="p">{</span>
+        <span class="k">protected</span> <span class="nv">$fillable</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;language&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">,</span> <span class="s1">&#39;post_id&#39;</span><span class="p">];</span>
+
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">post</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">belongsTo</span><span class="p">(</span><span class="s1">&#39;App\Post&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre></div>
+
+<p>Our <em>Post</em> model is a little bit different.<br />
+Remember our desired function <em>$post-&gt;translation()</em>?<br />
+If we supply no argument, we would like to get the current chosen language.<br />
+Otherwise take the language we supplied.</p>
+
+<p>Well, luckily we can define a relationship with a <em>where</em> clause in Laravel (FU**YEAH LARAVEL!).
+Everything else is pretty basic Eloquent stuff again.</p>
+
+<p><em>file app/Post.php</em></p>
+
+<div class="highlight"><pre><code class="language-php">    <span class="k">namespace</span> <span class="nx">App</span><span class="p">;</span>
+
+    <span class="k">use</span> <span class="nx">Illuminate\Support\Facades\App</span><span class="p">;</span>
+    <span class="k">use</span> <span class="nx">Illuminate\Database\Eloquent\Model</span><span class="p">;</span>
+
+    <span class="k">class</span> <span class="nc">Post</span> <span class="k">extends</span> <span class="nx">Model</span>
+    <span class="p">{</span>
+        <span class="k">protected</span> <span class="nv">$fillable</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;published&#39;</span><span class="p">];</span>
+
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">translation</span><span class="p">(</span><span class="nv">$language</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$language</span> <span class="o">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nv">$language</span> <span class="o">=</span> <span class="nx">App</span><span class="o">::</span><span class="na">getLocale</span><span class="p">();</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">hasMany</span><span class="p">(</span><span class="s1">&#39;App\PostTranslation&#39;</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">where</span><span class="p">(</span><span class="s1">&#39;language&#39;</span><span class="p">,</span> <span class="s1">&#39;=&#39;</span><span class="p">,</span> <span class="nv">$language</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre></div>
+
+<p>Easy, right? Now we just need to add some sort of functionality to create all the <em>PostTranslation</em> entries once we create a Post.</p>
+
+<p>I’ve created a simple PHP Trait which i can just include in every Model with a relevant Translations table.
+The <em>static::saved</em> function is “kind of a Event”, which get’s triggered once we save a model (ASDFBWF LARAVEL!!). <br />
+We can just add our piece of Code, to execute once a Model is saved, this perfectly plays in our hands.</p>
+
+<p><em>file app\Support\Translateable.php</em></p>
+
+<div class="highlight"><pre><code class="language-php">    <span class="k">namespace</span> <span class="nx">App\Support</span><span class="p">;</span>
+    <span class="k">use</span> <span class="nx">Illuminate\Support\Facades\Config</span><span class="p">;</span>
+    <span class="k">trait</span> <span class="nx">Translateable</span>
+    <span class="p">{</span>
+        <span class="k">protected</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">boot</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">parent</span><span class="o">::</span><span class="na">boot</span><span class="p">();</span>
+
+            <span class="k">static</span><span class="o">::</span><span class="na">saved</span><span class="p">(</span><span class="k">function</span><span class="p">(</span><span class="nv">$model</span><span class="p">){</span>
+
+                <span class="c1">//Let&#39;s get our supported configurations from the config file we&#39;ve created</span>
+                <span class="nv">$languages</span> <span class="o">=</span> <span class="nx">Config</span><span class="o">::</span><span class="na">get</span><span class="p">(</span><span class="s1">&#39;languages.supported&#39;</span><span class="p">);</span>
+                <span class="k">foreach</span> <span class="p">(</span><span class="nv">$languages</span> <span class="k">as</span> <span class="nv">$language</span><span class="p">)</span> 
+                <span class="p">{</span>
+                    <span class="nv">$model</span><span class="o">-&gt;</span><span class="na">translation</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">create</span><span class="p">([</span><span class="s1">&#39;language&#39;</span> <span class="o">=&gt;</span> <span class="nv">$language</span><span class="p">]);</span>
+                <span class="p">}</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre></div>
+
+<p>Now just use this trait in our <em>Post</em> Model and we’re done!</p>
+
+<p><em>file app/Post.php</em></p>
+
+<div class="highlight"><pre><code class="language-php">    <span class="k">namespace</span> <span class="nx">App</span><span class="p">;</span>
+
+    <span class="k">use</span> <span class="nx">Illuminate\Support\Facades\App</span><span class="p">;</span>
+    <span class="k">use</span> <span class="nx">Illuminate\Database\Eloquent\Model</span><span class="p">;</span>
+    <span class="k">use</span> <span class="nx">App\Support\Translateable</span><span class="p">;</span>
+
+    <span class="k">class</span> <span class="nc">Post</span> <span class="k">extends</span> <span class="nx">Model</span>
+    <span class="p">{</span>
+        <span class="k">use</span> <span class="nx">Translateable</span><span class="p">;</span>
+
+        <span class="k">protected</span> <span class="nv">$fillable</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;published&#39;</span><span class="p">];</span>
+        
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">translation</span><span class="p">(</span><span class="nv">$language</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$language</span> <span class="o">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nv">$language</span> <span class="o">=</span> <span class="nx">App</span><span class="o">::</span><span class="na">getLocale</span><span class="p">();</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">hasMany</span><span class="p">(</span><span class="s1">&#39;App\PostTranslation&#39;</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">where</span><span class="p">(</span><span class="s1">&#39;language&#39;</span><span class="p">,</span> <span class="s1">&#39;=&#39;</span><span class="p">,</span> <span class="nv">$language</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre></div>
+
+<p>Unfortunately, our desired way of using translations does not work exactly like we wanted. <br />
+Since we have a 1-m relation between our <em>posts</em> and <em>post_translations</em> table, we always get a collection of translations, everytime we call <em>$post-&gt;translation()</em>. <br />
+This means, we need to change our Code a little bit and add the <em>first()</em> method.</p>
+
+<div class="highlight"><pre><code class="language-php">    <span class="c1">//Read the title in the currently set language</span>
+    <span class="nv">$post</span><span class="o">-&gt;</span><span class="na">translation</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">first</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">title</span><span class="p">;</span>
+
+    <span class="c1">//Read the title in the language &quot;de&quot;</span>
+    <span class="nv">$post</span><span class="o">-&gt;</span><span class="na">translation</span><span class="p">(</span><span class="s1">&#39;de&#39;</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">first</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">title</span><span class="p">;</span>
+
+    <span class="c1">//Update a post</span>
+    <span class="nv">$post</span><span class="o">-&gt;</span><span class="na">translation</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">first</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">update</span><span class="p">([]);</span></code></pre></div>
+
+<p>I did not yet have the time or idea for a way to bypass the <em>first()</em> method. <br />
+If someone has a idea, please let me know in the comments.</p>
+
+<p>Now go ahead and build your awesome, multilanguage Application!</p>
+
+<p>If something isn’t working or if you have further questions, leave a comment and i will happily reply.</p>
+
+
+
+    <aside class="share">
+
+      <span>Share this: </span> 
+
+      <a href="//twitter.com/share?text=Laravel Multi-language Models / Database&amp;url=http://blog.remoblaser.ch/laravel/2016/laravel-multi-language/&amp;via=remoblaser"
+      onclick="ga('send', 'event', 'button', 'click', 'share');window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+        <i class="fa fa-twitter"></i>
+      </a>
+
+      <a href="//www.facebook.com/sharer/sharer.php?u=http://blog.remoblaser.ch/laravel/2016/laravel-multi-language/"
+      onclick="ga('send', 'event', 'button', 'click', 'share');window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+        <i class="fa fa-facebook"></i>
+      </a>
+
+      <a target="_blank" href="//de.pinterest.com/pin/create/button/" data-pin-do="buttonBookmark"  data-pin-color="red" data-pin-height="28">
+        <i class="fa fa-pinterest"></i>
+      </a>
+
+    </aside>
+  </div>
+
+  
+  <hr>
+
+  <aside id="comments" class="disqus">
+
+    <div class="container">
+      <h3><i class="fa fa-comments-o"></i> Comments</h3>
+      <div id="disqus_thread"></div>
+
+      <script type="text/javascript">
+         var disqus_shortname = 'remoblaser';
+        
+        var disqus_config = function () {
+            this.page.url = 'http://blog.remoblaser.ch/laravel/2016/laravel-multi-language';
+            this.page.identifier = '/laravel/2016/laravel-multi-language' + 'http://blog.remoblaser.ch';
+            this.page.title = "Laravel Multi-language Models / Database";
+            this.callbacks.onNewComment = [function() { 
+              ga('send', 'event', 'button', 'click', 'comment');
+            }];
+        };
+        
+        (function() { 
+            var d = document, s = d.createElement('script');
+            
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';  
+            
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+      </script>
+
+      <noscript>
+        Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+      </noscript>
+    </div>
+
+  </aside>
+
+</article>
+
+
+<div class="subscribe">
+    <span class="close"><i class="fa fa-close"></i></span>
+    <p>Like what you're reading? Subscribe now for a weekly list of new Posts directly into your mailbox. No spam, i promise!</p>
+
+    <div id="mc_embed_signup">
+        <form action="//remoblaser.us12.list-manage.com/subscribe/post?u=f1a5c7aaa441210086d3e9047&amp;id=d41fbaadee" 
+            method="post" 
+            id="mc-embedded-subscribe-form" 
+            name="mc-embedded-subscribe-form" 
+            class="validate" 
+            target="_blank" 
+            novalidate>
+            <div id="mc_embed_signup_scroll">
+    
+                <div class="mc-field-group">
+                    <input required placeholder="E-Mail" type="email" value="" name="EMAIL" class="required email inline" id="mce-EMAIL">
+                </div>
+                <div style="position: absolute; left: -5000px;" aria-hidden="true">
+                    <input type="text" name="b_f1a5c7aaa441210086d3e9047_d41fbaadee" tabindex="-1" value="">
+                </div>
+                <div class="clear">
+                    <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button inline" onclick="ga('send', 'event', 'button', 'click', 'add-subscriber-panel');">
+                </div>
+            </div>
+        </form>
+    </div> 
+</div>
+
+        </section>
+
+        
+<div class="clearfix"></div>
+
+<footer class="site-footer txt-center">
+  <hr>
+
+  <ul class="social">
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://twitter.com/remoblaser" target="_blank"><i class="fa fa-twitter"></i></a></li>
+      
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://github.com/remoblaser" target="_blank"><i class="fa fa-github"></i></a></li>
+      
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://plus.google.com/+RemoBlaser" target="_blank"><i class="fa fa-google-plus"></i></a></li>
+      
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://xing.com/profile/Remo_Blaser" target="_blank"><i class="fa fa-xing"></i></a></li>
+      
+    
+  </ul>
+
+  <small>&copy; 2016 All rights reserved. Made with <a href="http://jekyllrb.com" target="_blank">Jekyll</a> and <i class="fa fa-heart"></i>
+  <br />
+  <a href="/subscribe/">Subscribe to the newsletter</a>
+  </small>
+
+</footer>
+
+
+    </main>
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jekyll-search.min.js"></script>
+    <script src="/js/cookies.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="theme-color" content="#22313f">
+
+<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
+
+
+
+
+<title> Let&#39;s Encrypt: Just do it! | remoblaser.ch</title>
+
+
+
+
+<meta name="description" content="Let&#39;s Encrpyt gives you a easy way to use SSL on your Website for free, use it!">
+
+<meta name="keywords" content="lets, encrypt, https, ssl, certificate, nginx">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+
+
+
+<link rel="canonical" href="http://blog.remoblaser.ch/devs-managing-a-server/2015/lets-encrypt-just-do-it/">
+<link rel="alternate" type="application/rss+xml" title="remoblaser.ch" href="http://blog.remoblaser.ch/feed.xml" />
+
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-50142337-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+
+  </head>
+  <body class="single">
+
+    <main class="main-container">
+
+        <header class="site-header">
+
+  <div class="container txt-center">
+    <a href="#" class="nav-toogle js-menu-trigger sliding-panel-button">
+      <span></span>
+      <span></span>
+      <span></span>
+    </a>
+
+    <nav class="js-menu sliding-panel-content">
+      <ul>
+        <li><a href="/">front</a></li>
+        <li><a href="/about">about</a></li>
+        <li><a href="/subscribe">subscribe</a></li>
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-feed"></i> feed</a></li>
+      </ul>
+    </nav>
+    <div class="js-menu-screen sliding-panel-fade-screen"></div>
+ 
+    <a href="/" class="author-thumb dot">
+      <img src="/images/author.jpg" alt="Author thumbnail" class="dot">
+    </a>
+
+    
+      <h1 class="post-title">Let's Encrypt: Just do it!</h1>
+      <p class="post-meta">Dec 22, 2015</p>
+    
+
+  </div>
+
+</header>
+
+
+        <section class="main-content">
+          <article class="post">
+
+  <div class="post-content container">
+    <p>So, imagine there is a way to setup a FREE SSL Certificate in just 5 MINUTES. Awesome right? Well, this is not a dream anymore, anyone can do this now, so…</p>
+
+<p><img src="https://45.media.tumblr.com/409e7b0e659f46f3d4a190631f641e81/tumblr_npwq9fRJmt1tuall8o1_500.gif" alt="" /></p>
+
+<p><br />
+Your website will benefit from SSL / HTTPS in many ways, it’s more secure, you get a better search ranking and it just looks a bit more professional.
+So there is literally no reason not to use it.
+Lets do it together, shall we?</p>
+
+<h2 id="lets-encrypt">Let’s Encrypt!</h2>
+<p><a href="https://letsencrypt.org/">Let’s Encrypt</a> provides a easy shell script to do everything for you. It’s actually hosted on <a href="https://github.com/letsencrypt/letsencrypt">Github</a> so we can just clone the repository</p>
+
+<div class="highlight"><pre><code class="language-bash">    <span class="nv">$ </span>git clone https://github.com/letsencrypt/letsencrypt</code></pre></div>
+
+<p>Now, give Nginx / Apache a break until we’re done</p>
+
+<div class="highlight"><pre><code class="language-bash">    <span class="nv">$ </span>service nginx stop
+    <span class="nv">$ </span>service apache2 stop</code></pre></div>
+
+<p>Generate your certificate</p>
+
+<div class="highlight"><pre><code class="language-bash">    <span class="nv">$ </span><span class="nb">cd </span>letsencrypt
+    <span class="nv">$ </span>./letsencrypt-auto certonly --standalone --email my@email.com -d foodomain.com</code></pre></div>
+<p>Tip: you can add multiple Domains with the -d parameter (for example: also add the www.foodomain.com Domain). Wildcard Domains are not possible with Let’s Encrypt.</p>
+
+<h2 id="ssl">3-2-1 SSL!</h2>
+<p>Now just configure your site to use the Certificate we’ve just created.</p>
+
+<p><strong>Apache Users</strong></p>
+
+<div class="highlight"><pre><code class="language-bash">    LoadModule ssl_module modules/mod_ssl.so
+
+    Listen 443
+    &lt;VirtualHost *:443&gt;
+        ServerName foodomain.com
+        SSLEngine on
+        SSLCertificateFile <span class="s2">&quot;/etc/letsencrypt/live/foodomain.com/fullchain.pem&quot;</span>
+        SSLCertificateKeyFile <span class="s2">&quot;/etc/letsencrypt/live/foodomain.com/privkey.pem&quot;</span>
+    &lt;/VirtualHost&gt;</code></pre></div>
+<p><strong>NGINX Users</strong></p>
+
+<div class="highlight"><pre><code class="language-bash">    listen <span class="m">443</span> ssl<span class="p">;</span>  
+    server_name foodomain.com<span class="p">;</span> <span class="c"># Replace with your domain  </span>
+    ssl_certificate /etc/letsencrypt/live/foodomain.com/fullchain.pem<span class="p">;</span>  
+    ssl_certificate_key /etc/letsencrypt/live/foodomain.com/privkey.pem<span class="p">;</span></code></pre></div>
+
+<p>Restart NGINX / Apache:</p>
+
+<div class="highlight"><pre><code class="language-bash">    <span class="nv">$ </span>service nginx start
+    <span class="nv">$ </span>service apache2 start</code></pre></div>
+
+<p>Done! You’re now successfully using SSL / HTTPS! For further Documentation, check out the <a href="https://github.com/letsencrypt/letsencrypt">Let’s Encrypt Github repository</a>.</p>
+
+<p><br />
+  <br />
+<em>PS: I’m not using it on my Blog because i’m lazy (or clever?) and using Github pages. Cheers!</em></p>
+
+
+    <aside class="share">
+
+      <span>Share this: </span> 
+
+      <a href="//twitter.com/share?text=Let's Encrypt: Just do it!&amp;url=http://blog.remoblaser.ch/devs-managing-a-server/2015/lets-encrypt-just-do-it/&amp;via=remoblaser"
+      onclick="ga('send', 'event', 'button', 'click', 'share');window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+        <i class="fa fa-twitter"></i>
+      </a>
+
+      <a href="//www.facebook.com/sharer/sharer.php?u=http://blog.remoblaser.ch/devs-managing-a-server/2015/lets-encrypt-just-do-it/"
+      onclick="ga('send', 'event', 'button', 'click', 'share');window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+        <i class="fa fa-facebook"></i>
+      </a>
+
+      <a target="_blank" href="//de.pinterest.com/pin/create/button/" data-pin-do="buttonBookmark"  data-pin-color="red" data-pin-height="28">
+        <i class="fa fa-pinterest"></i>
+      </a>
+
+    </aside>
+  </div>
+
+  
+  <hr>
+
+  <aside id="comments" class="disqus">
+
+    <div class="container">
+      <h3><i class="fa fa-comments-o"></i> Comments</h3>
+      <div id="disqus_thread"></div>
+
+      <script type="text/javascript">
+         var disqus_shortname = 'remoblaser';
+        
+        var disqus_config = function () {
+            this.page.url = 'http://blog.remoblaser.ch/devs-managing-a-server/2015/lets-encrypt-just-do-it';
+            this.page.identifier = '/devs-managing-a-server/2015/lets-encrypt-just-do-it' + 'http://blog.remoblaser.ch';
+            this.page.title = "Let's Encrypt: Just do it!";
+            this.callbacks.onNewComment = [function() { 
+              ga('send', 'event', 'button', 'click', 'comment');
+            }];
+        };
+        
+        (function() { 
+            var d = document, s = d.createElement('script');
+            
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';  
+            
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+      </script>
+
+      <noscript>
+        Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+      </noscript>
+    </div>
+
+  </aside>
+
+</article>
+
+
+<div class="subscribe">
+    <span class="close"><i class="fa fa-close"></i></span>
+    <p>Like what you're reading? Subscribe now for a weekly list of new Posts directly into your mailbox. No spam, i promise!</p>
+
+    <div id="mc_embed_signup">
+        <form action="//remoblaser.us12.list-manage.com/subscribe/post?u=f1a5c7aaa441210086d3e9047&amp;id=d41fbaadee" 
+            method="post" 
+            id="mc-embedded-subscribe-form" 
+            name="mc-embedded-subscribe-form" 
+            class="validate" 
+            target="_blank" 
+            novalidate>
+            <div id="mc_embed_signup_scroll">
+    
+                <div class="mc-field-group">
+                    <input required placeholder="E-Mail" type="email" value="" name="EMAIL" class="required email inline" id="mce-EMAIL">
+                </div>
+                <div style="position: absolute; left: -5000px;" aria-hidden="true">
+                    <input type="text" name="b_f1a5c7aaa441210086d3e9047_d41fbaadee" tabindex="-1" value="">
+                </div>
+                <div class="clear">
+                    <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button inline" onclick="ga('send', 'event', 'button', 'click', 'add-subscriber-panel');">
+                </div>
+            </div>
+        </form>
+    </div> 
+</div>
+
+        </section>
+
+        
+<div class="clearfix"></div>
+
+<footer class="site-footer txt-center">
+  <hr>
+
+  <ul class="social">
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://twitter.com/remoblaser" target="_blank"><i class="fa fa-twitter"></i></a></li>
+      
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://github.com/remoblaser" target="_blank"><i class="fa fa-github"></i></a></li>
+      
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://plus.google.com/+RemoBlaser" target="_blank"><i class="fa fa-google-plus"></i></a></li>
+      
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://xing.com/profile/Remo_Blaser" target="_blank"><i class="fa fa-xing"></i></a></li>
+      
+    
+  </ul>
+
+  <small>&copy; 2016 All rights reserved. Made with <a href="http://jekyllrb.com" target="_blank">Jekyll</a> and <i class="fa fa-heart"></i>
+  <br />
+  <a href="/subscribe/">Subscribe to the newsletter</a>
+  </small>
+
+</footer>
+
+
+    </main>
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jekyll-search.min.js"></script>
+    <script src="/js/cookies.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

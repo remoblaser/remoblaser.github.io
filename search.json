@@ -1,0 +1,123 @@
+[
+  
+    {
+      "title"    : "Using JWT with Laravel - Part 1: The API",
+      "category" : "Laravel",
+      "tags"     : "JavaScript and Laravel",
+      "url"      : "/laravel/2016/using-jwt-with-laravel-1-2/",
+      "date"     : "2016-01-22 11:19:18 +0100"
+    } ,
+  
+    {
+      "title"    : "Enums for JavaScript: Enumify",
+      "category" : "ES6",
+      "tags"     : "JavaScript, ES6, Library, and Enums",
+      "url"      : "/es6/2016/enums-for-javascript/",
+      "date"     : "2016-01-18 12:08:51 +0100"
+    } ,
+  
+    {
+      "title"    : "Laravel Multi-language Models / Database",
+      "category" : "Laravel",
+      "tags"     : "Laravel, Database, and Multi-language",
+      "url"      : "/laravel/2016/laravel-multi-language/",
+      "date"     : "2016-01-07 09:58:16 +0100"
+    } ,
+  
+    {
+      "title"    : "Verbal expressions: RegEx made easy",
+      "category" : "PrettyCoding",
+      "tags"     : "Verbal Expressions and RegEx",
+      "url"      : "/prettycoding/2016/verbal-expressions/",
+      "date"     : "2016-01-04 09:55:31 +0100"
+    } ,
+  
+    {
+      "title"    : "The Power of grep",
+      "category" : "bashing",
+      "tags"     : "grep and Bash",
+      "url"      : "/bashing/2016/the-power-of-grep/",
+      "date"     : "2016-01-01 20:32:35 +0100"
+    } ,
+  
+    {
+      "title"    : "Making friends with null: The Null Object Pattern",
+      "category" : "PrettyCoding",
+      "tags"     : "PHP and Patterns",
+      "url"      : "/prettycoding/2015/the-null-object-pattern/",
+      "date"     : "2015-12-29 12:32:25 +0100"
+    } ,
+  
+    {
+      "title"    : "Javascript Promises explained",
+      "category" : "Frontend-shizzle",
+      "tags"     : "JavaScript",
+      "url"      : "/frontend-shizzle/2015/javascript-promises/",
+      "date"     : "2015-12-28 11:24:05 +0100"
+    } ,
+  
+    {
+      "title"    : "Let&#39;s Encrypt: Just do it!",
+      "category" : "Devs-managing-a-Server",
+      "tags"     : "SSL, Let's Encrypt, and Server",
+      "url"      : "/devs-managing-a-server/2015/lets-encrypt-just-do-it/",
+      "date"     : "2015-12-22 16:10:49 +0100"
+    } ,
+  
+    {
+      "title"    : "Introducing my easy to use Laravel search package",
+      "category" : "Laravel",
+      "tags"     : "Laravel and Search",
+      "url"      : "/laravel/2015/introducing-laravel-search/",
+      "date"     : "2015-12-22 10:20:45 +0100"
+    } ,
+  
+    {
+      "title"    : "Bootstrap 4 to hit the stage",
+      "category" : "Fontend-shizzle",
+      "tags"     : "CSS and Bootstrap",
+      "url"      : "/fontend-shizzle/2015/bootstrap-4-to-hit-the-stage/",
+      "date"     : "2015-08-26 14:20:16 +0200"
+    } ,
+  
+    {
+      "title"    : "Lumen is here! But whats is it?",
+      "category" : "Laravel",
+      "tags"     : "Laravel, Lumen, and PHP",
+      "url"      : "/laravel/2015/laravel-lumen-whats-new/",
+      "date"     : "2015-04-16 14:20:16 +0200"
+    } ,
+  
+    {
+      "title"    : "Colorize Android statusbar for your Website",
+      "category" : "Frontend-shizzle",
+      "tags"     : "HTML and CSS",
+      "url"      : "/frontend-shizzle/2015/colorize-android-statusbar-for-your-website/",
+      "date"     : "2015-04-08 14:20:16 +0200"
+    } ,
+  
+    {
+      "title"    : "Wordpress redirect guess",
+      "category" : "Wordpress",
+      "tags"     : "Wordpress and PHP",
+      "url"      : "/wordpress/2015/wordpress-redirect-guess/",
+      "date"     : "2015-02-25 11:27:43 +0100"
+    } ,
+  
+    {
+      "title"    : "Native HTML Dropdown autocompletion",
+      "category" : "Frontend-shizzle",
+      "tags"     : "HTML and CSS",
+      "url"      : "/frontend-shizzle/2015/native-html-dropdown-autocompletion/",
+      "date"     : "2015-02-25 11:27:43 +0100"
+    } ,
+  
+    {
+      "title"    : "AJAX search in Wordpress",
+      "category" : "Frontend-shizzle",
+      "tags"     : "AJAX and Wordpress",
+      "url"      : "/frontend-shizzle/2014/ajax-search-in-wordpress/",
+      "date"     : "2014-07-24 08:24:58 +0200"
+    } 
+  
+]

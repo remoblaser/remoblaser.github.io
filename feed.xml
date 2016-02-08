@@ -1,0 +1,1160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>remoblaser.ch</title>
+    <description>Friendly Webdeveloper from your neighbourhood</description>
+    <link>http://blog.remoblaser.ch/</link>
+    <atom:link href="http://blog.remoblaser.ch/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Mon, 08 Feb 2016 13:56:35 +0100</pubDate>
+    <lastBuildDate>Mon, 08 Feb 2016 13:56:35 +0100</lastBuildDate>
+    <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>Using JWT with Laravel - Part 1: The API</title>
+        <description>&lt;p&gt;“JSON Web Token (JWT) is a compact, URL-safe means of representing claims to be transferred between two parties.” &lt;br /&gt;
+&lt;em&gt;Quote from &lt;a href=&quot;http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html&quot;&gt;self-issued.info&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+Basically a way to identify or authenticate a user between a API and a Fronted application with a encoded token.
+Thus we can securely transmit information between two parties (ie. API and Frontend).&lt;/p&gt;
+
+&lt;p&gt;I’m not going too deep into the design and structure of a JWT, there are enough resources handling this question, &lt;a href=&quot;https://jwt.io/introduction/&quot;&gt;here’s a good one&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;We’re going straight to the main part: &lt;strong&gt;How to use JWT with Laravel&lt;/strong&gt;.
+Our goal in this first part is to build a simple API which handles a simple authentication form.
+In the second Part we will set up a Frontend application consuming this API.&lt;/p&gt;
+
+&lt;p&gt;Afterwards you could do all sort of things with this basic setup.&lt;/p&gt;
+
+&lt;h1 id=&quot;part-1-the-api&quot;&gt;Part 1: The API&lt;/h1&gt;
+
+&lt;h2 id=&quot;laravel-setup&quot;&gt;Laravel setup&lt;/h2&gt;
+
+&lt;p&gt;Luckily, there’s a wonderful &lt;a href=&quot;https://github.com/tymondesigns/jwt-auth&quot;&gt;composer package&lt;/a&gt; from Sean Tymon, which basically does a lot of the sruff for us.
+Let’s go ahead and create a Laravel installation and include the package.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;composer create-project laravel/laravel
+    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;composer require tymon/jwt-auth&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Afterwards we include the package in our providers in &lt;em&gt;config/app.php&lt;/em&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;s1&quot;&gt;&amp;#39;providers&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;Tymon\JWTAuth\Providers\JWTAuthServiceProvider&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;And we register the facades in the same file:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;s1&quot;&gt;&amp;#39;aliases&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+        &lt;span class=&quot;s1&quot;&gt;&amp;#39;JWTAuth&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Tymon\JWTAuth\Facades\JWTAuth&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;s1&quot;&gt;&amp;#39;JWTFactory&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Tymon\JWTAuth\Facades\JWTFactory&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we can publish the JWT configuration and generate a secret key with these simple artisan commands&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;php artisan vendor:publish --provider&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;Tymon\JWTAuth\Providers\JWTAuthServiceProvider&amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;php artisan jwt:generate&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Done! We’ve successfully added JWT support to our Laravel installation.&lt;/p&gt;
+
+&lt;p&gt;Keep in mind to update the &lt;strong&gt;app/jwt.php&lt;/strong&gt; configuration if you have custom settings (for example the User model at a different Namespace).
+There’s a good documentation about the options over at the &lt;a href=&quot;https://github.com/tymondesigns/jwt-auth/wiki/Configuration&quot;&gt;GitHub wiki&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;authentication-api&quot;&gt;Authentication API&lt;/h2&gt;
+&lt;p&gt;Let’s create a Basic Authentication Controller to handle incoming auth requests&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;php artisan make:controller AuthController&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;And add some basic routes to our &lt;em&gt;app/Http/routes.php&lt;/em&gt; file&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;nx&quot;&gt;Route&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;auth/login&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;AuthController@login&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Thats all we need for this tutorial.
+The logout will happen on the client/frontend side, sine we can just destroy the token.
+Now we can set up these Methods in our &lt;em&gt;AuthController&lt;/em&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;&lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Tymon\JWTAuth\Facades\JWTAuth&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Tymon\JWTAuth\Exceptions\JWTException&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;AuthController&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Controller&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;login&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Request&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nv&quot;&gt;$credentials&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;only&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;email&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;password&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$token&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;JWTAuth&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;attempt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$credentials&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;error&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;invalid_credentials&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;401&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;JWTException&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;error&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;could_not_create_token&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;500&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;compact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;token&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Alright, keep in mind to register the Middleware if you’re going further than just a simple login.
+Over at &lt;em&gt;app/Http/Kernel.php&lt;/em&gt; add these two Middlewares.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$routeMiddleware&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+        &lt;span class=&quot;s1&quot;&gt;&amp;#39;jwt.auth&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;\Tymon\JWTAuth\Middleware\GetUserFromToken&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;s1&quot;&gt;&amp;#39;jwt.refresh&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;\Tymon\JWTAuth\Middleware\RefreshToken&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Thats it. Have fun coding! Come back next week for the second part, where we will set up our Frontend.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 22 Jan 2016 11:19:18 +0100</pubDate>
+        <link>http://blog.remoblaser.ch/laravel/2016/using-jwt-with-laravel-1-2/</link>
+        <guid isPermaLink="true">http://blog.remoblaser.ch/laravel/2016/using-jwt-with-laravel-1-2/</guid>
+        
+        <category>JavaScript</category>
+        
+        <category>Laravel</category>
+        
+        
+        <category>laravel</category>
+        
+      </item>
+    
+      <item>
+        <title>Enums for JavaScript: Enumify</title>
+        <description>&lt;p&gt;Everyone coming from Java, C# or a similar language knows what enums are.
+For the others: Enums are a list of constants. Predefined values which do not represent any numeric or textual data.
+As an example you could define available Colors in an enum, like Colors.RED, Colors.BLUE etc.&lt;/p&gt;
+
+&lt;p&gt;With the power of ES6 and the Open Source library &lt;a href=&quot;https://github.com/rauschma/enumify&quot;&gt;Enumify&lt;/a&gt; we can now use enums in JavaScript.&lt;/p&gt;
+
+&lt;p&gt;Some might say: “But there is already a possibility to use enums in JavaScript” and ofcourse you’re right.
+Native JavaScript enums look like this:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot;&gt;    &lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Color&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;RED&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;BLUE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;But defining enums like this comes with a handful of problems. &lt;br /&gt;
+&lt;strong&gt;First of all&lt;/strong&gt;, if you log a value, you do not see it’s name, only the number assigned. &lt;br /&gt;
+&lt;strong&gt;Secondly&lt;/strong&gt;, those values are not unique, you could mix them up with other values. &lt;br /&gt;
+&lt;strong&gt;Last but not least&lt;/strong&gt;, you cannot check if Color.RED or Color.BLUE is an instance of Color.&lt;/p&gt;
+
+&lt;p&gt;You could play around with Symbol() and other verbose stuff to get a better way of handling those, but who cares if you have a simple library, right?&lt;/p&gt;
+
+&lt;p&gt;Let’s try to use enums with enumify, you could simply include the library’s js file, but i’m going to use npm to resolve the dependencies.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;npm install enumify&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Now let’s create our enum&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot;&gt;    &lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Enum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;enumify&amp;#39;&lt;/span&gt;
+    
+    &lt;span class=&quot;c1&quot;&gt;//Define a enum and make it extend &amp;quot;Enum&amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;kr&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Color&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Enum&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;//Initialize the enum with your values&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;Color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;initEnum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;RED&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;BLUE&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
+    
+    &lt;span class=&quot;c1&quot;&gt;//Test it out&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;RED&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Color.RED&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;BLUE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;instanceof&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// true&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;enumValueOf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;RED&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;RED&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// true&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kr&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;color&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;of&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;enumValues&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// Color.RED&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// Color.BLUE&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Handsome, right? &lt;br /&gt;
+For more information, check out the GitHub Library &lt;a href=&quot;https://github.com/rauschma/enumify&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 18 Jan 2016 12:08:51 +0100</pubDate>
+        <link>http://blog.remoblaser.ch/es6/2016/enums-for-javascript/</link>
+        <guid isPermaLink="true">http://blog.remoblaser.ch/es6/2016/enums-for-javascript/</guid>
+        
+        <category>JavaScript</category>
+        
+        <category>ES6</category>
+        
+        <category>Library</category>
+        
+        <category>Enums</category>
+        
+        
+        <category>es6</category>
+        
+      </item>
+    
+      <item>
+        <title>Laravel Multi-language Models / Database</title>
+        <description>&lt;p&gt;Recently i had the opportunity to finally build up a Laravel project with multiple languages.&lt;br /&gt;
+I’ve looked up multiple resources to have a look for the current “best practice” in this area.&lt;br /&gt;
+I stumbled on a lot of good ideas and i’d like to show you today, how i did it.&lt;/p&gt;
+
+&lt;h1 id=&quot;the-problem&quot;&gt;The Problem&lt;/h1&gt;
+&lt;p&gt;The full App needs to be multilanguage, texts, buttons etc.&lt;br /&gt;
+For the static stuff i’m blessed with the wonderful functionality &lt;a href=&quot;https://laravel.com&quot;&gt;Laravel&lt;/a&gt; provides.&lt;br /&gt;
+I can just use the built in &lt;a href=&quot;https://laravel.com/docs/master/localization&quot;&gt;localization&lt;/a&gt; feature.&lt;/p&gt;
+
+&lt;p&gt;For the stuff stored inside the Database however, i need a little concept.&lt;br /&gt;
+I need to be able, to add any Language at any given time.&lt;br /&gt;
+This means, our Database design and our application needs some sort of functionality to add new languages and set up everything properly.&lt;/p&gt;
+
+&lt;h1 id=&quot;the-concept&quot;&gt;The Concept&lt;/h1&gt;
+&lt;p&gt;A multilanguage Database design really depends on your needs and favours.
+I like the approach of creating a seperate table for the translations of a relation.
+Usually i give these tables the same name as the reference table and suffix them with &lt;em&gt;_translations&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Let’s say we have a Blog application and our posts need to be avaialable in multiple languages.
+This would be my approach to handle it&lt;/p&gt;
+
+&lt;h3 id=&quot;table-posts&quot;&gt;Table posts&lt;/h3&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Column&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;Type&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;Additional&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;id&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;integer&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;index, unique&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;published&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;integer&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;table-posttranslations&quot;&gt;Table post_translations&lt;/h3&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Column&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;Type&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;Additional&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;id&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;integer&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;index, unique&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;language&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;string&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;title&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;string&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;content&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;text&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;post_id&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;integer&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;foreign&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;how-do-i-want-to-use-it&quot;&gt;How do i want to use it?&lt;/h2&gt;
+&lt;p&gt;After that pretty simple Database setup i asked myself: “How would i like to use it?”&lt;br /&gt;
+I like planning my application like this, it enforces me to write all my code and APIs way simpler.&lt;br /&gt;
+I go ahead, create a simple example and write down the function calls, even though they do not exist yet.\&lt;/p&gt;
+
+&lt;p&gt;For this example i sat down and just wrote the process of creating, reading, updating and deleting a entry.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;c1&quot;&gt;//Creating/Deleting a post and all translations should happen automatically once i create/delete a post&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;//Read the title in the currently set language&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;$post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;translation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;//Read the title in the language &amp;quot;de&amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;$post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;translation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;de&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;//Update a post&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;$post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;translation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;update&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Pretty straightforward right? Ofcourse we immediately see how we set up our Eloquent model by just defining a basic relationship inside our &lt;em&gt;Post&lt;/em&gt; model.&lt;/p&gt;
+
+&lt;p&gt;With these basic ideas, let’s go ahead and build it.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;lets-do-it&quot;&gt;Let’s do it!&lt;/h1&gt;
+
+&lt;h2 id=&quot;database-and-migrations&quot;&gt;Database and Migrations&lt;/h2&gt;
+&lt;p&gt;First of all i create the migrations and models for our Laravel application.&lt;br /&gt;
+Luckily we’re all artisans and we only need to run one command:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;php artisan make:model Post -m
+    Model created successfully.
+    Created Migration: 2016_01_07_090802_create_posts_table
+
+    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;php artisan make:model PostTranslation -m
+    Model created successfully.
+    Created Migration: 2016_01_07_091025_create_post_translations_table&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Now let’s set up our Database&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;file: database/migrations/2016_01_07_090802_create_posts_table.php&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Illuminate\Database\Schema\Blueprint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Illuminate\Database\Migrations\Migration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;CreatePostsTable&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Migration&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;sd&quot;&gt;/**&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         * Run the migrations.&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         *&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         * @return void&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         */&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;up&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;Schema&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;posts&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Blueprint&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;increments&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+                &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;integer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;published&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+                &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;timestamps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;sd&quot;&gt;/**&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         * Reverse the migrations.&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         *&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         * @return void&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         */&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;down&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;Schema&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;drop&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;posts&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;em&gt;file: database/migrations/2016_01_07_091025_create_post_translations_table.php&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Illuminate\Database\Schema\Blueprint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Illuminate\Database\Migrations\Migration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;CreatePostTranslationsTable&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Migration&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;sd&quot;&gt;/**&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         * Run the migrations.&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         *&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         * @return void&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         */&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;up&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;Schema&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;post_translations&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Blueprint&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;increments&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+                &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;language&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+                &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;content&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+                &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;integer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;post_id&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;foreign&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;post_id&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                        &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;references&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                        &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;on&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;posts&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                        &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;onDelete&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;cascade&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+                &lt;span class=&quot;nv&quot;&gt;$table&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;timestamps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;sd&quot;&gt;/**&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         * Reverse the migrations.&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         *&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         * @return void&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;         */&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;down&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;Schema&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;drop&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;post_translations&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Alright, thats it for the Database (isn’t Laravel awesome?).&lt;br /&gt;
+Let’s go ahead and migrate it.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Note: Creating a Database and configure Laravel is not part of this tutorial.&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;php artisan migrate
+    Migrated: 2016_01_07_090802_create_posts_table
+    Migrated: 2016_01_07_091025_create_post_translations_table&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;configure-our-app&quot;&gt;Configure our App&lt;/h2&gt;
+
+&lt;p&gt;Now, let’s get to our models. As we said, we would like to create all translation entries once we create a post.&lt;br /&gt;
+For this, i’ve created a simple config file in which we specify, which languages are supported in our Application.&lt;/p&gt;
+
+&lt;p&gt;You could also put this in a Database table and let Admins of your Application create and delete certain Languages.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;file: config/languages.php&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;s1&quot;&gt;&amp;#39;supported&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+            &lt;span class=&quot;s1&quot;&gt;&amp;#39;en&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;s1&quot;&gt;&amp;#39;de&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;set-up-eloquent-models&quot;&gt;Set up Eloquent Models&lt;/h2&gt;
+
+&lt;p&gt;We’ve already created our Eloquent models, we just need to provide them with some functionality now.&lt;br /&gt;
+Let’s set up our &lt;em&gt;PostTranslation&lt;/em&gt; model first.&lt;br /&gt;
+Everything is pretty normal here, we add our &lt;em&gt;$fillable&lt;/em&gt; array to define, which values can be filled when supplying a array of data.&lt;br /&gt;
+Afterwards we define the inverse of our relationship with the &lt;em&gt;posts&lt;/em&gt; table.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;file: app/PostTranslation.php&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Illuminate\Database\Eloquent\Model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;PostTranslation&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Model&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$fillable&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;language&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;content&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;post_id&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;belongsTo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;App\Post&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Our &lt;em&gt;Post&lt;/em&gt; model is a little bit different.&lt;br /&gt;
+Remember our desired function &lt;em&gt;$post-&amp;gt;translation()&lt;/em&gt;?&lt;br /&gt;
+If we supply no argument, we would like to get the current chosen language.&lt;br /&gt;
+Otherwise take the language we supplied.&lt;/p&gt;
+
+&lt;p&gt;Well, luckily we can define a relationship with a &lt;em&gt;where&lt;/em&gt; clause in Laravel (FU**YEAH LARAVEL!).
+Everything else is pretty basic Eloquent stuff again.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;file app/Post.php&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Illuminate\Support\Facades\App&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Illuminate\Database\Eloquent\Model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Post&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Model&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$fillable&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;published&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;translation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$language&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$language&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;nv&quot;&gt;$language&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getLocale&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;hasMany&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;App\PostTranslation&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;where&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;language&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;=&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$language&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Easy, right? Now we just need to add some sort of functionality to create all the &lt;em&gt;PostTranslation&lt;/em&gt; entries once we create a Post.&lt;/p&gt;
+
+&lt;p&gt;I’ve created a simple PHP Trait which i can just include in every Model with a relevant Translations table.
+The &lt;em&gt;static::saved&lt;/em&gt; function is “kind of a Event”, which get’s triggered once we save a model (ASDFBWF LARAVEL!!). &lt;br /&gt;
+We can just add our piece of Code, to execute once a Model is saved, this perfectly plays in our hands.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;file app\Support\Translateable.php&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App\Support&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Illuminate\Support\Facades\Config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;trait&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Translateable&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;boot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;parent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;boot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+            &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;saved&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+
+                &lt;span class=&quot;c1&quot;&gt;//Let&amp;#39;s get our supported configurations from the config file we&amp;#39;ve created&lt;/span&gt;
+                &lt;span class=&quot;nv&quot;&gt;$languages&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;languages.supported&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;foreach&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$languages&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$language&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+                &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;nv&quot;&gt;$model&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;translation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;language&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$language&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Now just use this trait in our &lt;em&gt;Post&lt;/em&gt; Model and we’re done!&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;file app/Post.php&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Illuminate\Support\Facades\App&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Illuminate\Database\Eloquent\Model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App\Support\Translateable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Post&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Model&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Translateable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$fillable&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;published&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+        
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;translation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$language&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$language&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;nv&quot;&gt;$language&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getLocale&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;hasMany&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;App\PostTranslation&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;where&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;language&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;=&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$language&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Unfortunately, our desired way of using translations does not work exactly like we wanted. &lt;br /&gt;
+Since we have a 1-m relation between our &lt;em&gt;posts&lt;/em&gt; and &lt;em&gt;post_translations&lt;/em&gt; table, we always get a collection of translations, everytime we call &lt;em&gt;$post-&amp;gt;translation()&lt;/em&gt;. &lt;br /&gt;
+This means, we need to change our Code a little bit and add the &lt;em&gt;first()&lt;/em&gt; method.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;c1&quot;&gt;//Read the title in the currently set language&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;$post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;translation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;first&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;//Read the title in the language &amp;quot;de&amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;$post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;translation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;de&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;first&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;//Update a post&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;$post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;translation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;first&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;update&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;I did not yet have the time or idea for a way to bypass the &lt;em&gt;first()&lt;/em&gt; method. &lt;br /&gt;
+If someone has a idea, please let me know in the comments.&lt;/p&gt;
+
+&lt;p&gt;Now go ahead and build your awesome, multilanguage Application!&lt;/p&gt;
+
+&lt;p&gt;If something isn’t working or if you have further questions, leave a comment and i will happily reply.&lt;/p&gt;
+
+</description>
+        <pubDate>Thu, 07 Jan 2016 09:58:16 +0100</pubDate>
+        <link>http://blog.remoblaser.ch/laravel/2016/laravel-multi-language/</link>
+        <guid isPermaLink="true">http://blog.remoblaser.ch/laravel/2016/laravel-multi-language/</guid>
+        
+        <category>Laravel</category>
+        
+        <category>Database</category>
+        
+        <category>Multi-language</category>
+        
+        
+        <category>laravel</category>
+        
+      </item>
+    
+      <item>
+        <title>Verbal expressions: RegEx made easy</title>
+        <description>&lt;p&gt;In my previous post i confessed the fact, I’m really bad with regular expressions.
+During the weekend, a tweet popped up with a link to &lt;a href=&quot;https://github.com/VerbalExpressions/JSVerbalExpressions&quot;&gt;this beautiful library called “VerbalExpressions”&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;VerbalExpressions helps you to build up your regular expressions, by simply chaining methods to create lines which basically do what they read.
+Behind the scenes, VerbalExpressions just creates a simple RegEx which we then use to validate a given string.&lt;/p&gt;
+
+&lt;p&gt;Here’s an example taken from their GitHub page. We validate a string to test, if we have a valid URL.
+VerbalExpressions is ported in a few languages so far (such as PHP, Python, Java and C#).
+You can find a full list on their &lt;a href=&quot;http://verbalexpressions.github.io/&quot;&gt;GitHub page&lt;/a&gt;. 
+I’ve taken the JavaScript approach for this example.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-JavaScript&quot;&gt;    &lt;span class=&quot;c1&quot;&gt;// Create an example to validate for correctly formed URLs&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;validator&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;VerEx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;startOfLine&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;http&amp;quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;maybe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;s&amp;quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;://&amp;quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;maybe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;www.&amp;quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;anythingBut&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot; &amp;quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;endOfLine&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Give a simple URL to validate&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;http://blog.remoblaser.ch&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Use RegExp object&amp;#39;s native test() function, since VerEx returns a RegEx&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;validator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;test&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;alert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;We have a correct URL &amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;alert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;The URL is incorrect&amp;quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;tester&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Outputs the constructed RegEx: /^(http)(s)?(\:\/\/)(www\.)?([^\ ]*)$/&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Stuff like replacing strings is made even simpler:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-JavaScript&quot;&gt;    &lt;span class=&quot;c1&quot;&gt;// Create a string&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;replaceMe&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;I really should learn regular expressions&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Create an expression that seeks for word &amp;quot;regular&amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;expression&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;VerEx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;find&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;regular&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Execute the expression like a normal RegExp object&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;expression&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;replace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;replaceMe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;verbal&amp;quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;nx&quot;&gt;alert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Outputs &amp;quot;I really should learn verbal expressions&amp;quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;There you go! No need for those silly RegEx codes (even though i really should have a look at them).&lt;/p&gt;
+</description>
+        <pubDate>Mon, 04 Jan 2016 09:55:31 +0100</pubDate>
+        <link>http://blog.remoblaser.ch/prettycoding/2016/verbal-expressions/</link>
+        <guid isPermaLink="true">http://blog.remoblaser.ch/prettycoding/2016/verbal-expressions/</guid>
+        
+        <category>Verbal Expressions</category>
+        
+        <category>RegEx</category>
+        
+        
+        <category>prettycoding</category>
+        
+      </item>
+    
+      <item>
+        <title>The Power of grep</title>
+        <description>&lt;p&gt;Every time i see a colleague searching for a specific keyword in various files, they open up the big search on their IDE or favourite Text-Editor.&lt;/p&gt;
+
+&lt;p&gt;But there is a way faster and more powerful way to do this, as you might suspected, i’m talking about grep.&lt;/p&gt;
+
+&lt;p&gt;grep is a command-line utility for Unix-like systems, there are also several Windows alternatives, like &lt;a href=&quot;http://www.powergrep.com/grep.html&quot;&gt;PowerGREP&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;To search for a given string in a file, the command looks like this&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;grep &amp;lt;keyword&amp;gt; &amp;lt;file&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;To search inside a directory, we just add the &lt;em&gt;-r&lt;/em&gt; parameter.
+For example, i want to search for the phrase “Hello World” inside all files in the current directory (and of course subdirectories)&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;grep -r &lt;span class=&quot;s2&quot;&gt;&amp;quot;Hello World&amp;quot;&lt;/span&gt; .&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Normally, i also add the &lt;em&gt;-n&lt;/em&gt; parameter, to get the line number in the file of each result.
+Another example: i want to find every &lt;em&gt;h1&lt;/em&gt; tag inside all the *.html files inside my projects directory&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;grep -r -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;&amp;lt;h1&amp;gt;&amp;quot;&lt;/span&gt; *.html&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;If you’re familiar with Regular Expressions (i’m not really good with them), you could also supply a RegEx instead of a keyword.&lt;/p&gt;
+
+&lt;p&gt;A full manual about grep can be found on the &lt;a href=&quot;http://www.gnu.org/software/grep/manual/grep.html&quot;&gt;gnu.org&lt;/a&gt; site.&lt;/p&gt;
+
+&lt;p&gt;Closing out: grep is very powerful and fast, consider using it instead of the bloated search of your editor.&lt;/p&gt;
+
+&lt;p&gt;P.S.: Happy new year!&lt;/p&gt;
+</description>
+        <pubDate>Fri, 01 Jan 2016 20:32:35 +0100</pubDate>
+        <link>http://blog.remoblaser.ch/bashing/2016/the-power-of-grep/</link>
+        <guid isPermaLink="true">http://blog.remoblaser.ch/bashing/2016/the-power-of-grep/</guid>
+        
+        <category>grep</category>
+        
+        <category>Bash</category>
+        
+        
+        <category>bashing</category>
+        
+      </item>
+    
+      <item>
+        <title>Making friends with null: The Null Object Pattern</title>
+        <description>&lt;p&gt;If i would count the amount of times I’ve checked against null, I would probably still be counting in a year.&lt;br /&gt;
+If i would count the amount of times I forgot to check against null and my application returned an error, I could count forever.&lt;/p&gt;
+
+&lt;p&gt;There are some cases in our system, where we would like to apply a sort of functionality if it’s available or not, if nothing is given.&lt;/p&gt;
+
+&lt;p&gt;The Null Value Object is a good way to remove unnecessary checks against null if we have such a behaviour in our App.&lt;br /&gt;
+I’m going to show you a good example, taken from &lt;a href=&quot;http://twitter.com/adamwathan&quot;&gt;Adam Wathan&lt;/a&gt;’s &lt;a href=&quot;https://www.youtube.com/watch?v=5DVDewOReoY&quot;&gt;Laracon Talk: “Chasing Perfect”&lt;/a&gt;.&lt;br /&gt;
+If you’ve not already watched the talk, it’s definitely worth it, so save the link to your bookmarks!&lt;/p&gt;
+
+&lt;p&gt;Let’s imagine we have a simple Shop and some coupon codes, for example a ValueCoupon and a PercentCoupon. &lt;br /&gt;
+The ValueCoupon simply gives us a fixed discount, while the PercentCoupon substracts a percentage of the total Price. &lt;br /&gt;
+At some point, we substract the discount from the Order, maybe in our Order class:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Foo\Bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Order&lt;/span&gt; 
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//some stuff&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;applyCoupon&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$coupon&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;coupon&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$coupon&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;totalWithoutDiscount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;//Some functionality to get the total of all Products in this Order&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;products&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;price&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;total&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;totalWithoutDiscount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;isset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;coupon&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$coupon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;//more stuff&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;And our Coupon classes could look something like this:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Foo\Bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;PercentCoupon&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Coupon&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//some stuff&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$order&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$order&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;totalWithoutDiscount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;//more stuff&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Foo\Bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ValueCoupon&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Coupon&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//some stuff&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$order&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;//more stuff&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Foo\Bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Coupon&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$order&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s take a closer look at the &lt;strong&gt;Order-&amp;gt;discount()&lt;/strong&gt; method. &lt;br /&gt;
+First we’re checking if someone has applied a Coupon, if not we just return 0, since there is no Coupon applied.&lt;br /&gt;
+But we could remove this little condition, making the Code look even prettier, by saying &lt;em&gt;“Hey, we basically always have a Coupon!”&lt;/em&gt;.&lt;br /&gt;
+This is where the Null Object Pattern comes into play.&lt;/p&gt;
+
+&lt;p&gt;We create a NullCoupon which has the same discount Method but simply returns 0, since it’s not “really” a Coupon:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Foo\Bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;NullCoupon&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;implements&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Coupon&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$order&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;If we have even more Methods using a Coupon, we won’t have to check our Order’s coupon agains null ever again. &lt;br /&gt;
+Additionally we do not have to fear for any Errors, because we tried accessing a non-present Coupon, again. &lt;br /&gt;
+Instead we just have a NullCoupon, basically doing &lt;em&gt;nothing&lt;/em&gt; to our Order’s total price.&lt;/p&gt;
+
+&lt;p&gt;We can now remove the if clause and instantiate a NullCoupon in the constructor:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Foo\Bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Order&lt;/span&gt; 
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//some stuff&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;__construct&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;coupon&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;NullCoupon&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$coupon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;discount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;//more stuff&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;And if we would like to implement a method, displaying the Coupon Value nicely to our user, we won’t need to check against null again:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Foo\Bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Order&lt;/span&gt; 
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//some stuff&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;displayCouponValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;coupon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;displayValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//no need for a if!&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;//more stuff&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Instead our NullDiscount just returns something like &lt;em&gt;No Coupon applied&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;There you go! Nice and clean!&lt;/p&gt;
+</description>
+        <pubDate>Tue, 29 Dec 2015 12:32:25 +0100</pubDate>
+        <link>http://blog.remoblaser.ch/prettycoding/2015/the-null-object-pattern/</link>
+        <guid isPermaLink="true">http://blog.remoblaser.ch/prettycoding/2015/the-null-object-pattern/</guid>
+        
+        <category>PHP</category>
+        
+        <category>Patterns</category>
+        
+        
+        <category>prettycoding</category>
+        
+      </item>
+    
+      <item>
+        <title>Javascript Promises explained</title>
+        <description>&lt;p&gt;A JavaScript promise basically is a eventual result of an &lt;strong&gt;asynchronous&lt;/strong&gt; action, such as a simple function.
+It works similar like the synchronous try/catch approach.
+A promise can either be:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;- Pending (outcome has not been defined yet)&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;- Fulfilled (Action has successfully completed, Promise has a value)&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;- Rejected (Action failed, the promise will never be fulfilled!, Promise has a reason why it failed)&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;
+Promises are always asynchronous and a promise can never change it’s state from fulfilled to rejected or vise-versa.
+A pending promise can however transition into a fulfilled or a rejected promise.
+The basic functionality of a promise are as simple as a promise we do in our everyday life:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;A: Can you … ?&lt;/li&gt;
+  &lt;li&gt;B: Yes, i promise i will try to … !&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;A: Goes on (async)   &lt;em&gt;Promise state: pending&lt;/em&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;… later on …&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;B: I’ve done … here’s …   &lt;em&gt;Promise state: fulfilled&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;OR&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;B: I couldn’t do … because …   &lt;em&gt;Promise state: rejected&lt;/em&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;A: Continues on…&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;
+For a longer explanation and more details, the Mozilla Developer Network delivers a &lt;a href=&quot;https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise&quot;&gt;great article&lt;/a&gt; about promises. I’d rather would like to show you a simple example now.&lt;/p&gt;
+
+&lt;h2 id=&quot;example&quot;&gt;Example&lt;/h2&gt;
+
+&lt;p&gt;Alright, let’s dig into it. As you’ve may already discovered, AJAX requests are a perfect case to use promises.
+They’re asynchronous, which means we can continue on while the request is pending and later on we can specifically take action if our request failed or succeeded.
+Let’s consume a simple API with JavaScript. I’ve used &lt;a href=&quot;http://jsonplaceholder.typicode.com/&quot;&gt;JSONPlaceholder&lt;/a&gt; to simply test out a promise.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;em&gt;View a &lt;a href=&quot;/examples/javascript-promise/&quot;&gt;working example here&lt;/a&gt; or check out the &lt;a href=&quot;https://gist.github.com/remoblaser/15ba8ec41c10df996e0d&quot;&gt;source here&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+First, let’s grab the API-Root from the JSONPlaceholder API. I’ve directly added &lt;em&gt;/posts/&lt;/em&gt; since we’re only going to get 1 Post in this example:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot;&gt;    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;apiRoot&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;http://jsonplaceholder.typicode.com/posts/&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Alright, now lets make our promise and put it in a simple function called &lt;em&gt;getPost&lt;/em&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot;&gt;    &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getPost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;//Create a new Promise&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Promise&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;resolve&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;reject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+
+            &lt;span class=&quot;c1&quot;&gt;//Create a simple JS XMLHttpRequest&lt;/span&gt;
+            &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;req&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;XMLHttpRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;GET&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;apiRoot&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+            &lt;span class=&quot;c1&quot;&gt;//Once we send out the Request...&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;onload&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;status&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;c1&quot;&gt;//resolve the promise (promise will be fulfilled)&lt;/span&gt;
+                    &lt;span class=&quot;nx&quot;&gt;resolve&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;c1&quot;&gt;//Argh, we got some error. Let&amp;#39;s reject the promise&lt;/span&gt;
+                    &lt;span class=&quot;nx&quot;&gt;reject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;statusText&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+            &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+
+            &lt;span class=&quot;c1&quot;&gt;//If we didn&amp;#39;t get any response / we couldn&amp;#39;t send out the request, we have a network error.&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;//In this case, we will reject the promise aswell.&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;onerror&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;reject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;Network Error&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt; 
+
+            &lt;span class=&quot;c1&quot;&gt;//Send out the request&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;That’s it! It’s that simple! Now we can finally use our Promise:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot;&gt;    &lt;span class=&quot;nx&quot;&gt;getPost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;Success!&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;Failed!&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;As you can see, we have the possibility to react if the AJAX Request was successful or not.
+Additionally, everything is done asynchonous, which means, we could continue executing JS while our Promise is working.
+In the &lt;a href=&quot;/examples/javascript-promise/&quot;&gt;example&lt;/a&gt; i’ve added a bit more to it, make sure to check it out!&lt;/p&gt;
+</description>
+        <pubDate>Mon, 28 Dec 2015 11:24:05 +0100</pubDate>
+        <link>http://blog.remoblaser.ch/frontend-shizzle/2015/javascript-promises/</link>
+        <guid isPermaLink="true">http://blog.remoblaser.ch/frontend-shizzle/2015/javascript-promises/</guid>
+        
+        <category>JavaScript</category>
+        
+        
+        <category>frontend-shizzle</category>
+        
+      </item>
+    
+      <item>
+        <title>Let&#39;s Encrypt: Just do it!</title>
+        <description>&lt;p&gt;So, imagine there is a way to setup a FREE SSL Certificate in just 5 MINUTES. Awesome right? Well, this is not a dream anymore, anyone can do this now, so…&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://45.media.tumblr.com/409e7b0e659f46f3d4a190631f641e81/tumblr_npwq9fRJmt1tuall8o1_500.gif&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+Your website will benefit from SSL / HTTPS in many ways, it’s more secure, you get a better search ranking and it just looks a bit more professional.
+So there is literally no reason not to use it.
+Lets do it together, shall we?&lt;/p&gt;
+
+&lt;h2 id=&quot;lets-encrypt&quot;&gt;Let’s Encrypt!&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://letsencrypt.org/&quot;&gt;Let’s Encrypt&lt;/a&gt; provides a easy shell script to do everything for you. It’s actually hosted on &lt;a href=&quot;https://github.com/letsencrypt/letsencrypt&quot;&gt;Github&lt;/a&gt; so we can just clone the repository&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;git clone https://github.com/letsencrypt/letsencrypt&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Now, give Nginx / Apache a break until we’re done&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;service nginx stop
+    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;service apache2 stop&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Generate your certificate&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;letsencrypt
+    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;./letsencrypt-auto certonly --standalone --email my@email.com -d foodomain.com&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Tip: you can add multiple Domains with the -d parameter (for example: also add the www.foodomain.com Domain). Wildcard Domains are not possible with Let’s Encrypt.&lt;/p&gt;
+
+&lt;h2 id=&quot;ssl&quot;&gt;3-2-1 SSL!&lt;/h2&gt;
+&lt;p&gt;Now just configure your site to use the Certificate we’ve just created.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Apache Users&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    LoadModule ssl_module modules/mod_ssl.so
+
+    Listen 443
+    &amp;lt;VirtualHost *:443&amp;gt;
+        ServerName foodomain.com
+        SSLEngine on
+        SSLCertificateFile &lt;span class=&quot;s2&quot;&gt;&amp;quot;/etc/letsencrypt/live/foodomain.com/fullchain.pem&amp;quot;&lt;/span&gt;
+        SSLCertificateKeyFile &lt;span class=&quot;s2&quot;&gt;&amp;quot;/etc/letsencrypt/live/foodomain.com/privkey.pem&amp;quot;&lt;/span&gt;
+    &amp;lt;/VirtualHost&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;NGINX Users&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    listen &lt;span class=&quot;m&quot;&gt;443&lt;/span&gt; ssl&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;  
+    server_name foodomain.com&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# Replace with your domain  &lt;/span&gt;
+    ssl_certificate /etc/letsencrypt/live/foodomain.com/fullchain.pem&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;  
+    ssl_certificate_key /etc/letsencrypt/live/foodomain.com/privkey.pem&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Restart NGINX / Apache:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;service nginx start
+    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;service apache2 start&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Done! You’re now successfully using SSL / HTTPS! For further Documentation, check out the &lt;a href=&quot;https://github.com/letsencrypt/letsencrypt&quot;&gt;Let’s Encrypt Github repository&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+  &lt;br /&gt;
+&lt;em&gt;PS: I’m not using it on my Blog because i’m lazy (or clever?) and using Github pages. Cheers!&lt;/em&gt;&lt;/p&gt;
+</description>
+        <pubDate>Tue, 22 Dec 2015 16:10:49 +0100</pubDate>
+        <link>http://blog.remoblaser.ch/devs-managing-a-server/2015/lets-encrypt-just-do-it/</link>
+        <guid isPermaLink="true">http://blog.remoblaser.ch/devs-managing-a-server/2015/lets-encrypt-just-do-it/</guid>
+        
+        <category>SSL</category>
+        
+        <category>Let&#39;s Encrypt</category>
+        
+        <category>Server</category>
+        
+        
+        <category>devs-managing-a-server</category>
+        
+      </item>
+    
+      <item>
+        <title>Introducing my easy to use Laravel search package</title>
+        <description>&lt;p&gt;A while ago i’ve created a &lt;a href=&quot;https://github.com/remoblaser/laravel-search&quot;&gt;Laravel search package&lt;/a&gt; to easily search through your Eloquent Models / Database. I guess it’s time to show it off here and explain to you, how it works.&lt;/p&gt;
+
+&lt;h2 id=&quot;install-it&quot;&gt;Install it&lt;/h2&gt;
+&lt;p&gt;To install it, simply cd into your application and tell composer to add the package to your dependencies.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;composer require remoblaser/search&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;add-it-to-laravel&quot;&gt;Add it to Laravel&lt;/h2&gt;
+
+&lt;p&gt;Now let’s tell Laravel to use this package by adding it to your &lt;em&gt;providers&lt;/em&gt; array in &lt;em&gt;“app/app.php”&lt;/em&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;s1&quot;&gt;&amp;#39;providers&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+        &lt;span class=&quot;s1&quot;&gt;&amp;#39;Remoblaser\Search\SearchServiceProvider&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;
+Additionally we want to register a Facade to easily access the functionality everywhere we want.
+In &lt;em&gt;“app/config.php”&lt;/em&gt; again, add the following line to your &lt;em&gt;aliases&lt;/em&gt; array.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;s1&quot;&gt;&amp;#39;aliases&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+        &lt;span class=&quot;s1&quot;&gt;&amp;#39;Search&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;Remoblaser\Search\Facades\Search&amp;#39;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;br /&gt;
+Alright, got em! To finish off everything, run the &lt;em&gt;“php artisan vendor:publish”&lt;/em&gt; command to create a search configuration for your app. In there, we define which Eloquent Models we would like to search through.&lt;/p&gt;
+
+&lt;h2 id=&quot;use-it&quot;&gt;Use it&lt;/h2&gt;
+&lt;p&gt;Let’s imagine we have a Simple User Model. Actually let’s take the default Laravel User Model which looks like this:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Column&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;Type&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;Additional&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;name&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;string&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;email&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;string&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;unique&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;password&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;string&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;br /&gt;
+In a first step we’re going to enable a search on the User’s name.
+First, tell the search to look in this specific Model.
+In our published config file, add the Model and define a keyword for later use witht he Facade:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;s1&quot;&gt;&amp;#39;users&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;App\User&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;
+Now let’s tell our Model to implement the &lt;em&gt;SearchableTrait&lt;/em&gt; which actually adds the functionality to search through the Model.
+Additionally we can specify a array called &lt;em&gt;“searchFields”&lt;/em&gt; where we define, which columns we want to search through.
+In our example, we only want to search for the “names” of the User. You’re however free to define as much columns as you want.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;o&quot;&gt;&amp;lt;?&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;php&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App\User&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Remoblaser\Search\SearchableTrait&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;User&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;\Eloquent&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;SearchableTrait&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+            &lt;span class=&quot;k&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$searchFields&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;
+Thats it! Now we can finally search through the Users table from everywhere we want.
+Just use the &lt;em&gt;Search&lt;/em&gt; facade, followed by the keyword we defined in our config.
+Or search through all Tables by simply using &lt;em&gt;“Search::all()”&lt;/em&gt;.
+As a parameter, we use the word we would like to search.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;    &lt;span class=&quot;nx&quot;&gt;Search&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;users&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;john&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Only search through the App\User table&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;Search&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;all&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;john&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Search through all the Tables defined in our config&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;
+Easy, right?&lt;/p&gt;
+</description>
+        <pubDate>Tue, 22 Dec 2015 10:20:45 +0100</pubDate>
+        <link>http://blog.remoblaser.ch/laravel/2015/introducing-laravel-search/</link>
+        <guid isPermaLink="true">http://blog.remoblaser.ch/laravel/2015/introducing-laravel-search/</guid>
+        
+        <category>Laravel</category>
+        
+        <category>Search</category>
+        
+        
+        <category>laravel</category>
+        
+      </item>
+    
+      <item>
+        <title>Bootstrap 4 to hit the stage</title>
+        <description>&lt;p&gt;The undoubtful best HTML/CSS Framework Bootstrap is close to release it’s 4th version. I’ve taken a few minutes to introduce to you, my top 4 changes.&lt;/p&gt;
+
+&lt;h2 id=&quot;ie8-thrown-away-introducing-rem-and-em&quot;&gt;IE8 thrown away, introducing rem and em&lt;/h2&gt;
+&lt;p&gt;Bootstrap is “rolling with the changes”, IE8 support is dropped and the used measurement size has changed from pixels to &lt;a href=&quot;https://j.eremy.net/confused-about-rem-and-em/&quot;&gt;rem and em&lt;/a&gt;.
+This allows a better responsive behaviour of font sizes and general sizes.&lt;/p&gt;
+
+&lt;h2 id=&quot;reworked-all-javascript-plugins&quot;&gt;Reworked all JavaScript plugins&lt;/h2&gt;
+&lt;p&gt;With Bootstrap 4 all JavaScript plugins have been reworked with &lt;a href=&quot;http://es6-features.org/&quot;&gt;ES6&lt;/a&gt;. This means, we will experience performance imporvements.
+Additionally, due to the fact it’s ES6, we will also be introduced to features like UMD support, generic teardown methods, option type checking and many more.&lt;/p&gt;
+
+&lt;h2 id=&quot;replacing-less-with-sass&quot;&gt;Replacing LESS with SASS&lt;/h2&gt;
+&lt;p&gt;Some will probably not agree with me but i’m very happy Bootstrap moved to SASS!&lt;/p&gt;
+
+&lt;p&gt;With the drop of &lt;a href=&quot;http://lesscss.org/&quot;&gt;LESS&lt;/a&gt; for &lt;a href=&quot;http://sass-lang.com/&quot;&gt;SASS&lt;/a&gt;, compiling will be faster and more lightweight.
+Bootstrap will join a awesome community full of SASS lovers (not to confuse with the Ashley Madison lovers!).&lt;/p&gt;
+
+&lt;h2 id=&quot;reworked-documentation&quot;&gt;Reworked Documentation&lt;/h2&gt;
+&lt;p&gt;We will be greeted by a new Documentation, not only telling us all the new features but also showing us more examples.
+Additionally the search functionality has improved, this means, we will learn the same amount much faster.&lt;/p&gt;
+
+&lt;p&gt;Closing out, i think the Bootstrap is on a very good path. The changes made in version 4 are well thought.
+If you’re interested in a full list of changes, make sure to check out &lt;a href=&quot;http://blog.getbootstrap.com/2015/08/19/bootstrap-4-alpha/&quot;&gt;this site&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you’re even more interested, you should check out the &lt;a href=&quot;https://github.com/twbs/bootstrap/tree/v4-dev&quot;&gt;Github repository&lt;/a&gt; of Bootstrap.&lt;/p&gt;
+</description>
+        <pubDate>Wed, 26 Aug 2015 14:20:16 +0200</pubDate>
+        <link>http://blog.remoblaser.ch/fontend-shizzle/2015/bootstrap-4-to-hit-the-stage/</link>
+        <guid isPermaLink="true">http://blog.remoblaser.ch/fontend-shizzle/2015/bootstrap-4-to-hit-the-stage/</guid>
+        
+        <category>CSS</category>
+        
+        <category>Bootstrap</category>
+        
+        
+        <category>fontend-shizzle</category>
+        
+      </item>
+    
+  </channel>
+</rss>

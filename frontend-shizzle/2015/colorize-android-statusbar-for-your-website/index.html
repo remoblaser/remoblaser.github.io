@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="theme-color" content="#22313f">
+
+<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
+
+
+
+
+<title> Colorize Android statusbar for your Website | remoblaser.ch</title>
+
+
+
+
+<meta name="description" content="With a simple meta tag called theme-color you&#39;re able to submit a color code which will then be used on Android Smartphones.">
+
+<meta name="keywords" content="android, statusbar, color, meta, html">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+
+
+
+<link rel="canonical" href="http://blog.remoblaser.ch/frontend-shizzle/2015/colorize-android-statusbar-for-your-website/">
+<link rel="alternate" type="application/rss+xml" title="remoblaser.ch" href="http://blog.remoblaser.ch/feed.xml" />
+
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-50142337-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+
+  </head>
+  <body class="single">
+
+    <main class="main-container">
+
+        <header class="site-header">
+
+  <div class="container txt-center">
+    <a href="#" class="nav-toogle js-menu-trigger sliding-panel-button">
+      <span></span>
+      <span></span>
+      <span></span>
+    </a>
+
+    <nav class="js-menu sliding-panel-content">
+      <ul>
+        <li><a href="/">front</a></li>
+        <li><a href="/about">about</a></li>
+        <li><a href="/subscribe">subscribe</a></li>
+        <li><a href="/feed.xml" target="_blank"><i class="icon icon-feed"></i> feed</a></li>
+      </ul>
+    </nav>
+    <div class="js-menu-screen sliding-panel-fade-screen"></div>
+ 
+    <a href="/" class="author-thumb dot">
+      <img src="/images/author.jpg" alt="Author thumbnail" class="dot">
+    </a>
+
+    
+      <h1 class="post-title">Colorize Android statusbar for your Website</h1>
+      <p class="post-meta">Apr 8, 2015</p>
+    
+
+  </div>
+
+</header>
+
+
+        <section class="main-content">
+          <article class="post">
+
+  <div class="post-content container">
+    <p>Since Android 5.0 every tab is considered a App on your phone.
+Besides that, you can now colorize the statusbar for your website!
+With a simple meta tag called <strong>“theme-color”</strong> you’re able to submit a color code which will then be used on Android Smartphones.</p>
+
+<p>I’ve tested this functionality with my own blog and the publishingblog.ch website, which is another site i’m blogging on.
+On the Screenshots you can clearly see, how this behaves. The Twitter app has it’s colorized statusbar aswell as the two websites stated above. The <a href="http://weloveyou.ch">weloveyou.ch</a> Website does not have a meta tag and thus the statusbar remains white.</p>
+
+<p>Here’s the HTML snippet to it. Just simply place the meta tag in your head part and you’re done!</p>
+
+<div class="highlight"><pre><code class="language-html">    <span class="nt">&lt;head&gt;</span>
+        <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">&quot;theme-color&quot;</span> <span class="na">content=</span><span class="s">&quot;#53A6DC&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;/head&gt;</span></code></pre></div>
+
+
+    <aside class="share">
+
+      <span>Share this: </span> 
+
+      <a href="//twitter.com/share?text=Colorize Android statusbar for your Website&amp;url=http://blog.remoblaser.ch/frontend-shizzle/2015/colorize-android-statusbar-for-your-website/&amp;via=remoblaser"
+      onclick="ga('send', 'event', 'button', 'click', 'share');window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+        <i class="fa fa-twitter"></i>
+      </a>
+
+      <a href="//www.facebook.com/sharer/sharer.php?u=http://blog.remoblaser.ch/frontend-shizzle/2015/colorize-android-statusbar-for-your-website/"
+      onclick="ga('send', 'event', 'button', 'click', 'share');window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+        <i class="fa fa-facebook"></i>
+      </a>
+
+      <a target="_blank" href="//de.pinterest.com/pin/create/button/" data-pin-do="buttonBookmark"  data-pin-color="red" data-pin-height="28">
+        <i class="fa fa-pinterest"></i>
+      </a>
+
+    </aside>
+  </div>
+
+  
+  <hr>
+
+  <aside id="comments" class="disqus">
+
+    <div class="container">
+      <h3><i class="fa fa-comments-o"></i> Comments</h3>
+      <div id="disqus_thread"></div>
+
+      <script type="text/javascript">
+         var disqus_shortname = 'remoblaser';
+        
+        var disqus_config = function () {
+            this.page.url = 'http://blog.remoblaser.ch/frontend-shizzle/2015/colorize-android-statusbar-for-your-website';
+            this.page.identifier = '/frontend-shizzle/2015/colorize-android-statusbar-for-your-website' + 'http://blog.remoblaser.ch';
+            this.page.title = "Colorize Android statusbar for your Website";
+            this.callbacks.onNewComment = [function() { 
+              ga('send', 'event', 'button', 'click', 'comment');
+            }];
+        };
+        
+        (function() { 
+            var d = document, s = d.createElement('script');
+            
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';  
+            
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+      </script>
+
+      <noscript>
+        Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+      </noscript>
+    </div>
+
+  </aside>
+
+</article>
+
+
+<div class="subscribe">
+    <span class="close"><i class="fa fa-close"></i></span>
+    <p>Like what you're reading? Subscribe now for a weekly list of new Posts directly into your mailbox. No spam, i promise!</p>
+
+    <div id="mc_embed_signup">
+        <form action="//remoblaser.us12.list-manage.com/subscribe/post?u=f1a5c7aaa441210086d3e9047&amp;id=d41fbaadee" 
+            method="post" 
+            id="mc-embedded-subscribe-form" 
+            name="mc-embedded-subscribe-form" 
+            class="validate" 
+            target="_blank" 
+            novalidate>
+            <div id="mc_embed_signup_scroll">
+    
+                <div class="mc-field-group">
+                    <input required placeholder="E-Mail" type="email" value="" name="EMAIL" class="required email inline" id="mce-EMAIL">
+                </div>
+                <div style="position: absolute; left: -5000px;" aria-hidden="true">
+                    <input type="text" name="b_f1a5c7aaa441210086d3e9047_d41fbaadee" tabindex="-1" value="">
+                </div>
+                <div class="clear">
+                    <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button inline" onclick="ga('send', 'event', 'button', 'click', 'add-subscriber-panel');">
+                </div>
+            </div>
+        </form>
+    </div> 
+</div>
+
+        </section>
+
+        
+<div class="clearfix"></div>
+
+<footer class="site-footer txt-center">
+  <hr>
+
+  <ul class="social">
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://twitter.com/remoblaser" target="_blank"><i class="fa fa-twitter"></i></a></li>
+      
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://github.com/remoblaser" target="_blank"><i class="fa fa-github"></i></a></li>
+      
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://plus.google.com/+RemoBlaser" target="_blank"><i class="fa fa-google-plus"></i></a></li>
+      
+    
+      
+        <li><a href="" target="_blank"><i class="fa fa-"></i></a></li>
+      
+        <li><a href="http://xing.com/profile/Remo_Blaser" target="_blank"><i class="fa fa-xing"></i></a></li>
+      
+    
+  </ul>
+
+  <small>&copy; 2016 All rights reserved. Made with <a href="http://jekyllrb.com" target="_blank">Jekyll</a> and <i class="fa fa-heart"></i>
+  <br />
+  <a href="/subscribe/">Subscribe to the newsletter</a>
+  </small>
+
+</footer>
+
+
+    </main>
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jekyll-search.min.js"></script>
+    <script src="/js/cookies.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>
